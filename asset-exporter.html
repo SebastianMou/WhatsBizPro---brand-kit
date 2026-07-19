@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsBizPro — Asset Exporter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+ --bg:#0B141A;--panel:#202C33;--out:#005C4B;--in:#202C33;--green:#25D366;
+ --teal:#128C7E;--text:#E9EDEF;--muted:#8696A0;--tick:#53BDEB;
+ --display:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;
+ --bsize:17px;--bwidth:340px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05080a;color:var(--text);font-family:var(--body);padding:26px 18px 90px}
+h1{font-family:var(--display);font-weight:700;font-size:1.5rem;margin-bottom:4px}
+h1 b{color:var(--green)}
+.lead{color:var(--muted);font-size:.9rem;max-width:780px;margin-bottom:8px;line-height:1.55}
+.lead b{color:var(--text);font-weight:600}
+h2{font-family:var(--display);font-weight:600;font-size:1rem;letter-spacing:.14em;
+ text-transform:uppercase;color:var(--muted);margin:34px 0 16px;
+ border-top:1px solid rgba(134,150,160,.18);padding-top:22px}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.card{background:rgba(17,27,33,.7);border:1px solid rgba(134,150,160,.16);
+ border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;max-width:440px}
+.card.builder{max-width:560px;border-color:rgba(37,211,102,.4)}
+.preview{border-radius:10px;overflow:hidden;
+ background-image:linear-gradient(45deg,#1a2830 25%,transparent 25%),linear-gradient(-45deg,#1a2830 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a2830 75%),linear-gradient(-45deg,transparent 75%,#1a2830 75%);
+ background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;padding:14px;display:flex}
+.btn{font-family:var(--display);font-weight:600;font-size:.82rem;color:#0B141A;
+ background:var(--green);border:none;border-radius:999px;padding:9px 18px;cursor:pointer;align-self:flex-start}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:none;color:var(--muted);border:1px solid rgba(134,150,160,.3)}
+.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:.72rem;color:var(--muted);font-family:var(--display);letter-spacing:.05em}
+.tag.edit{color:var(--green)}
+select,input[type=text],input[type=number],textarea,.toggle button{
+ font-family:var(--display);font-weight:600;background:#0B141A;color:var(--text);
+ border:1px solid rgba(134,150,160,.25);border-radius:12px;padding:8px 14px;font-size:.82rem}
+select,.toggle button{border-radius:999px;cursor:pointer}
+textarea{font-family:var(--body);font-weight:400;width:100%;min-height:96px;resize:vertical;line-height:1.5;border-radius:12px}
+input[type=text],input[type=number]{width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--green)}
+.toggle{display:inline-flex;gap:6px;margin-bottom:8px}
+.toggle button.active{background:var(--green);color:#0B141A;border-color:var(--green)}
+.controls{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.grow{flex:1;min-width:110px}
+label.tag{margin-bottom:0}
+.grid2{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ---- exact element styles (from the source deck) ---- */
+.bubble{position:relative;display:inline-block;padding:16px 20px 22px;border-radius:14px;
+ font-family:var(--body);font-size:var(--bsize);line-height:1.4;color:var(--text);max-width:var(--bwidth)}
+.bubble.in{background:var(--in);border-top-left-radius:4px;font-weight:400}
+.bubble.out{background:var(--out);border-top-right-radius:4px;font-weight:500}
+.bubble.out::before{content:"";position:absolute;top:2px;right:-4px;width:9px;height:9px;
+ background:var(--out);transform:rotate(45deg)}
+.bubble b{color:#fff;font-weight:600}
+.bubble .meta{position:absolute;bottom:7px;right:13px;display:flex;align-items:center;gap:4px;
+ font-size:9px;color:rgba(233,237,239,.5)}
+.btext{outline:none;display:block;min-width:40px}
+.ticks{width:13px;height:9px;display:inline-block}.ticks svg{width:100%;height:100%;fill:var(--tick)}
+.wordmark{font-family:var(--display);font-weight:700;font-size:56px;letter-spacing:-.03em;line-height:1;white-space:nowrap}
+.wordmark .g{color:var(--green)}
+.tile{width:150px;height:150px;border-radius:34px;background:var(--green);display:flex;align-items:center;justify-content:center}
+.bgbox{position:relative;overflow:hidden;border-radius:8px}
+.bgbox::after{content:"";position:absolute;inset:0;background-image:var(--doodle);background-size:120px 120px;opacity:var(--doodleop,0)}
+</style>
+</head>
+<body>
+<h1>Whats<b>Biz</b>Pro &middot; Asset Exporter</h1>
+<p class="lead">Every reusable piece from your deck, with <b>editable text</b>. Type your own copy,
+then download as a PNG with a <b>transparent background</b> (checkerboard = see-through) at 2×
+resolution, ready to drop into Canva.</p>
+<p class="lead">Two ways to edit: use the <b>Bubble builder</b> below to write a brand-new message,
+or <b>click directly on any preset bubble's text</b> and type over it. For <b>bold</b>, select
+text and hit Ctrl/Cmd&nbsp;+&nbsp;B, or wrap it in <b>**double asterisks**</b> in the builder.</p>
+
+<h2>Bubble builder — write your own</h2>
+<div class="row">
+ <div class="card builder">
+  <div class="preview"><div class="bubble out" id="bPrev"><span class="btext" id="bPrevText"></span><span class="meta" id="bPrevMeta"></span></div></div>
+  <div class="field">
+   <label class="tag edit">Message text — **asterisks** make bold</label>
+   <textarea id="bText">Your WhatsApp co-pilot. **You stay in control.**</textarea>
+  </div>
+  <div class="grid2">
+   <div class="field grow">
+    <label class="tag">Bubble type</label>
+    <select id="bDir">
+     <option value="out">Sent · green</option>
+     <option value="in">Received · grey</option>
+    </select>
+   </div>
+   <div class="field grow">
+    <label class="tag">Timestamp</label>
+    <input type="text" id="bTime" value="now">
+   </div>
+   <div class="field grow">
+    <label class="tag">Blue ticks</label>
+    <select id="bTicks"><option value="yes">Show</option><option value="no">Hide</option></select>
+   </div>
+  </div>
+  <div class="grid2">
+   <div class="field grow">
+    <label class="tag">Text size (px)</label>
+    <input type="number" id="bSize" value="17" min="9" max="60">
+   </div>
+   <div class="field grow">
+    <label class="tag">Max width (px)</label>
+    <input type="number" id="bWidth" value="340" min="120" max="900">
+   </div>
+   <div class="field grow">
+    <label class="tag">File name</label>
+    <input type="text" id="bFile" value="bubble-custom">
+   </div>
+  </div>
+  <div class="btnrow">
+   <button class="btn" id="bDl">Download PNG</button>
+   <span class="tag">exports at 2× · transparent</span>
+  </div>
+ </div>
+</div>
+
+<h2>Backgrounds</h2>
+<div class="controls">
+ <label class="tag">Size</label>
+ <select id="bgSize">
+  <option value="1080x1080">Square · 1080×1080</option>
+  <option value="1080x1920">Story / Reel · 1080×1920</option>
+  <option value="1080x1350">Portrait · 1080×1350</option>
+  <option value="1920x1080">Landscape · 1920×1080</option>
+ </select>
+ <label class="tag">Pattern</label>
+ <select id="bgPat"><option value="on">With doodle</option><option value="off">Plain gradient</option></select>
+</div>
+<div class="row" id="bgRow"></div>
+
+<h2>Preset bubbles — click the text to edit</h2>
+<div class="controls">
+ <div class="toggle" id="langToggle">
+  <button data-l="en" class="active">EN</button>
+  <button data-l="es">ES</button>
+ </div>
+ <label class="tag">Text size</label>
+ <input type="number" id="gSize" value="17" min="9" max="60" style="width:90px">
+ <label class="tag">Max width</label>
+ <input type="number" id="gWidth" value="340" min="120" max="900" style="width:90px">
+ <button class="btn ghost" id="resetAll">Reset text</button>
+</div>
+<div class="row" id="bubbleRow"></div>
+
+<h2>Logo &amp; elements</h2>
+<div class="row" id="elemRow"></div>
+
+<script>
+const TICKS='<span class="ticks"><svg viewBox="0 0 16 11"><path d="M11.07.65l-.55-.42a.28.28 0 0 0-.4.06L5.35 6.46 3.6 4.8a.28.28 0 0 0-.4 0l-.5.5a.28.28 0 0 0 0 .4l2.4 2.32c.13.12.34.1.44-.04L11.13 1.05a.28.28 0 0 0-.06-.4z"/><path d="M15.07.65l-.55-.42a.28.28 0 0 0-.4.06L9.35 6.46l-.7-.66-.9 1.17.95.92c.13.12.34.1.44-.04L15.13 1.05a.28.28 0 0 0-.06-.4z"/></svg></span>';
+const DOODLE="url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23E9EDEF' stroke-width='1.6' opacity='0.9'%3E%3Cpath d='M34 46a16 16 0 1 1 7 13l-11 3 4-9a16 16 0 0 1 0-7z'/%3E%3Ccircle cx='162' cy='34' r='12'/%3E%3Cpath d='M154 34l6 6 10-11'/%3E%3Crect x='232' y='68' width='30' height='21' rx='4'/%3E%3Cpath d='M232 73l15 9 15-9'/%3E%3Cpath d='M70 162h34M70 171h23M70 180h30'/%3E%3Crect x='60' y='150' width='53' height='42' rx='7'/%3E%3Cpath d='M196 162l12 26 7-14 14-5z'/%3E%3Cpath d='M46 244c0-9 7-16 16-16s16 7 16 16M62 228v-9'/%3E%3Ccircle cx='242' cy='232' r='14'/%3E%3Cpath d='M242 223v9l7 5'/%3E%3Cpath d='M138 254l9-9 9 9-9 9z'/%3E%3C/g%3E%3C/svg%3E\")";
+const GRAD="radial-gradient(120% 90% at 78% 8%, rgba(18,140,126,.28) 0%, transparent 55%),radial-gradient(90% 70% at 12% 100%, rgba(37,211,102,.14) 0%, transparent 60%),var(--bg)";
+
+const BUBBLES={
+ en:[
+  ["cover","out","Your WhatsApp co-pilot. You stay in control."],
+  ["company","in","WhatsBizPro turns WhatsApp into a workstation. Sales reps, doctors, lawyers, recruiters; <b>anyone whose job runs through WhatsApp</b> gets an assistant that organizes, categorizes, and responds alongside them."],
+  ["mission","in","The problem isn\u2019t a lack of tools. It\u2019s a job that lives in a chat thread with no memory. We give it one: <b>CRM, scheduling, broadcasting, voice-to-text</b>, and an assistant you can ask &ldquo;what happened here.&rdquo;"],
+  ["mission2","out","English and Spanish. Nothing else, on purpose."],
+  ["values","in","The AI doesn\u2019t take the job; it removes the load around it. A doctor\u2019s assistant still talks to the patient. The tool just makes sure <b>nothing gets lost</b>."],
+  ["target","in","Sales reps, recruitment agencies, family medicine doctors, lawyers. Not &ldquo;small business.&rdquo; People whose real problem is <b>client and patient communication turning into chaos</b> with no system behind it."],
+  ["advantage","in","A Chrome extension, simple, and it doesn\u2019t ask you to trust an AI agent with your job. Two tiers; simple, and advanced on the Meta API. The fear of AI replacing people is <b>real</b>."],
+  ["advantage2","out","We\u2019re built against it, not inside it."],
+  ["plan","out","Revenue is subscription. Full stop."],
+  ["risk","in","The extension sits right at the edge of what the terms tolerate. The fix is the five-year goal ; <b>get WhatsApp to recognize us officially</b>."],
+  ["risk2","out","Until then, the business is a guest in someone else\u2019s house. And it knows it."]
+ ],
+ es:[
+  ["portada","out","Tu copiloto de WhatsApp. T\u00fa mantienes el control."],
+  ["empresa","in","WhatsBizPro convierte WhatsApp en una estaci\u00f3n de trabajo. Vendedores, doctores, abogados, reclutadores; <b>cualquiera cuyo trabajo corre por WhatsApp</b> recibe un asistente que organiza, categoriza y responde a su lado."],
+  ["mision","in","El problema no es falta de herramientas. Es un trabajo que vive en un chat sin memoria. Se la damos: <b>CRM, programaci\u00f3n, difusi\u00f3n, voz a texto</b>, y un asistente al que puedes preguntar &ldquo;qu\u00e9 pas\u00f3 aqu\u00ed&rdquo;."],
+  ["mision2","out","Ingl\u00e9s y espa\u00f1ol. Nada m\u00e1s, a prop\u00f3sito."],
+  ["valores","in","La IA no se queda con el trabajo; le quita la carga. El asistente de un doctor sigue hablando con el paciente. La herramienta solo se asegura de que <b>nada se pierda</b>."],
+  ["cliente","in","Vendedores, agencias de reclutamiento, doctores de medicina familiar, abogados. No &ldquo;peque\u00f1as empresas.&rdquo; Gente cuyo problema real es que <b>la comunicaci\u00f3n con clientes y pacientes se vuelve un caos</b> sin un sistema detr\u00e1s."],
+  ["ventaja","in","Una extensi\u00f3n de Chrome, simple, y no te pide confiarle tu trabajo a un agente de IA. Dos niveles; simple, y avanzado sobre la API de Meta. El miedo a que la IA reemplace a la gente es <b>real</b>."],
+  ["ventaja2","out","Estamos construidos contra \u00e9l, no dentro de \u00e9l."],
+  ["plan","out","Los ingresos son por suscripci\u00f3n. Punto."],
+  ["riesgo","in","La extensi\u00f3n est\u00e1 justo al borde de lo que los t\u00e9rminos toleran. La soluci\u00f3n es la meta a cinco a\u00f1os; <b>que WhatsApp nos reconozca oficialmente</b>."],
+  ["riesgo2","out","Hasta entonces, el negocio es un invitado en casa ajena. Y lo sabe."]
+ ]
+};
+
+/* ---------- helpers ---------- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// **bold** -> <b>, newlines -> <br>
+function mdToHtml(s){
+ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+}
+async function dl(node, filename, scale, transparent){
+ if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+ window.getSelection().removeAllRanges();
+ await new Promise(r=>setTimeout(r,30));
+ const canvas=await html2canvas(node,{scale:scale||2,backgroundColor:transparent?null:'#0B141A',useCORS:true});
+ const a=document.createElement('a');
+ a.download=filename.replace(/\.png$/i,'')+'.png';
+ a.href=canvas.toDataURL('image/png');a.click();
+}
+function card(previewNode, filename, opts){
+ const c=document.createElement('div');c.className='card';
+ const p=document.createElement('div');p.className='preview';p.appendChild(previewNode);
+ const t=document.createElement('div');t.className='tag';t.textContent=filename;
+ const b=document.createElement('button');b.className='btn';b.textContent='Download PNG';
+ b.onclick=()=>dl(previewNode,filename,(opts&&opts.scale)||2,!(opts&&opts.solid));
+ c.append(p,t,b);return c;
+}
+
+/* ---------- bubble builder ---------- */
+const bPrev=document.getElementById('bPrev'), bPrevText=document.getElementById('bPrevText'),
+      bPrevMeta=document.getElementById('bPrevMeta');
+function syncBuilder(){
+ const dir=document.getElementById('bDir').value;
+ bPrev.className='bubble '+dir;
+ bPrevText.innerHTML=mdToHtml(document.getElementById('bText').value)||'&nbsp;';
+ const ticks=document.getElementById('bTicks').value==='yes';
+ bPrevMeta.innerHTML=esc(document.getElementById('bTime').value)+' '+(ticks?TICKS:'');
+ bPrev.style.fontSize=document.getElementById('bSize').value+'px';
+ bPrev.style.maxWidth=document.getElementById('bWidth').value+'px';
+}
+['bText','bDir','bTime','bTicks','bSize','bWidth'].forEach(id=>{
+ document.getElementById(id).addEventListener('input',syncBuilder);
+ document.getElementById(id).addEventListener('change',syncBuilder);
+});
+document.getElementById('bDl').onclick=()=>
+ dl(bPrev, document.getElementById('bFile').value||'bubble-custom', 2, true);
+syncBuilder();
+
+/* ---------- preset bubbles (click-to-edit) ---------- */
+function renderBubbles(lang){
+ const row=document.getElementById('bubbleRow');row.innerHTML='';
+ BUBBLES[lang].forEach(([topic,dir,text])=>{
+  const el=document.createElement('div');el.className='bubble '+dir;
+  const span=document.createElement('span');
+  span.className='btext';span.setAttribute('contenteditable','true');span.innerHTML=text;
+  span.dataset.original=text;
+  const meta=document.createElement('span');meta.className='meta';
+  meta.innerHTML='now '+(dir==='out'?TICKS:'');
+  el.append(span,meta);
+  const c=card(el,`bubble-${lang}-${topic}-${dir}.png`);
+  const hint=document.createElement('div');hint.className='tag edit';
+  hint.textContent='✎ click the text to edit · Ctrl/Cmd+B for bold';
+  c.insertBefore(hint,c.querySelector('.btn'));
+  row.appendChild(c);
+ });
+}
+document.getElementById('resetAll').onclick=()=>{
+ document.querySelectorAll('#bubbleRow .btext').forEach(s=>s.innerHTML=s.dataset.original);
+};
+function applyGlobals(){
+ document.documentElement.style.setProperty('--bsize',document.getElementById('gSize').value+'px');
+ document.documentElement.style.setProperty('--bwidth',document.getElementById('gWidth').value+'px');
+}
+document.getElementById('gSize').addEventListener('input',applyGlobals);
+document.getElementById('gWidth').addEventListener('input',applyGlobals);
+
+/* ---------- backgrounds ---------- */
+function renderBackgrounds(){
+ const row=document.getElementById('bgRow');row.innerHTML='';
+ const [w,h]=document.getElementById('bgSize').value.split('x').map(Number);
+ const pat=document.getElementById('bgPat').value==='on';
+ const el=document.createElement('div');el.className='bgbox';
+ const pw=Math.round(w/6),ph=Math.round(h/6);
+ el.style.width=w+'px';el.style.height=h+'px';el.style.background=GRAD;
+ el.style.setProperty('--doodle',DOODLE);el.style.setProperty('--doodleop',pat?'0.05':'0');
+ const wrap=document.createElement('div');
+ wrap.style.width=pw+'px';wrap.style.height=ph+'px';wrap.style.overflow='hidden';wrap.style.borderRadius='6px';
+ el.style.transformOrigin='top left';el.style.transform=`scale(${pw/w})`;
+ wrap.appendChild(el);
+ const file=`bg-${pat?'patterned':'plain'}-${w}x${h}.png`;
+ const c=card(wrap,file,{solid:true,scale:1});
+ c.querySelector('.btn').onclick=()=>{
+   const prev=el.style.transform;el.style.transform='none';
+   dl(el,file,1,false).then(()=>{el.style.transform=prev;});
+ };
+ row.appendChild(c);
+}
+
+/* ---------- logo & elements ---------- */
+function renderElements(){
+ const row=document.getElementById('elemRow');row.innerHTML='';
+
+ // Editable wordmark: three inputs (prefix / accent / suffix)
+ const wm=document.createElement('div');wm.className='wordmark';
+ wm.innerHTML='<span id="wmA">Whats</span><span class="g" id="wmB">Biz</span><span id="wmC">Pro</span>';
+ const c=card(wm,'logo-wordmark-white.png');
+ const box=document.createElement('div');box.className='grid2';
+ box.innerHTML=`
+  <div class="field grow"><label class="tag edit">Text</label><input type="text" id="wmIn1" value="Whats"></div>
+  <div class="field grow"><label class="tag edit">Accent (green)</label><input type="text" id="wmIn2" value="Biz"></div>
+  <div class="field grow"><label class="tag edit">Text</label><input type="text" id="wmIn3" value="Pro"></div>
+  <div class="field grow"><label class="tag">Size (px)</label><input type="number" id="wmSize" value="56" min="16" max="200"></div>
+  <div class="field grow"><label class="tag">Colour</label>
+   <select id="wmCol">
+    <option value="#E9EDEF">White (for dark bg)</option>
+    <option value="#0B141A">Dark (for light bg)</option>
+    <option value="#25D366">All green</option>
+   </select></div>`;
+ c.insertBefore(box,c.querySelector('.btn'));
+ function syncWm(){
+  document.getElementById('wmA').textContent=document.getElementById('wmIn1').value;
+  document.getElementById('wmB').textContent=document.getElementById('wmIn2').value;
+  document.getElementById('wmC').textContent=document.getElementById('wmIn3').value;
+  wm.style.fontSize=document.getElementById('wmSize').value+'px';
+  wm.style.color=document.getElementById('wmCol').value;
+ }
+ row.appendChild(c);
+ ['wmIn1','wmIn2','wmIn3','wmSize','wmCol'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',syncWm);
+  document.getElementById(id).addEventListener('change',syncWm);
+ });
+ syncWm();
+
+ const mk=(html,file)=>{const d=document.createElement('div');d.innerHTML=html;return card(d.firstChild,file);};
+ row.appendChild(mk('<div class="tile"><svg viewBox="0 0 24 24" width="76" height="76"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4 3.5V16H6.5A2.5 2.5 0 0 1 4 13.5z" fill="#fff"/></svg></div>','logo-tile-placeholder.png'));
+ row.appendChild(mk('<span class="ticks" style="width:40px;height:28px">'+TICKS.replace('<span class="ticks">','').replace('</span>','')+'</span>','ticks-blue.png'));
+}
+
+document.querySelectorAll('#langToggle button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('#langToggle button').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');renderBubbles(b.dataset.l);
+});
+document.getElementById('bgSize').onchange=renderBackgrounds;
+document.getElementById('bgPat').onchange=renderBackgrounds;
+renderBackgrounds();renderBubbles('en');renderElements();applyGlobals();
+</script>
+</body>
+</html>
