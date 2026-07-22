@@ -1,301 +1,1133 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WhatsBizPro — Asset Exporter</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<style>
-:root{
- --bg:#0B141A;--panel:#202C33;--out:#005C4B;--in:#202C33;--green:#25D366;
- --teal:#128C7E;--text:#E9EDEF;--muted:#8696A0;--tick:#53BDEB;
- --display:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;
- --bsize:17px;--bwidth:340px;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#05080a;color:var(--text);font-family:var(--body);padding:26px 18px 90px}
-h1{font-family:var(--display);font-weight:700;font-size:1.5rem;margin-bottom:4px}
-h1 b{color:var(--green)}
-.lead{color:var(--muted);font-size:.9rem;max-width:780px;margin-bottom:8px;line-height:1.55}
-.lead b{color:var(--text);font-weight:600}
-h2{font-family:var(--display);font-weight:600;font-size:1rem;letter-spacing:.14em;
- text-transform:uppercase;color:var(--muted);margin:34px 0 16px;
- border-top:1px solid rgba(134,150,160,.18);padding-top:22px}
-.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
-.card{background:rgba(17,27,33,.7);border:1px solid rgba(134,150,160,.16);
- border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;max-width:440px}
-.card.builder{max-width:560px;border-color:rgba(37,211,102,.4)}
-.preview{border-radius:10px;overflow:hidden;
- background-image:linear-gradient(45deg,#1a2830 25%,transparent 25%),linear-gradient(-45deg,#1a2830 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a2830 75%),linear-gradient(-45deg,transparent 75%,#1a2830 75%);
- background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;padding:14px;display:flex}
-.btn{font-family:var(--display);font-weight:600;font-size:.82rem;color:#0B141A;
- background:var(--green);border:none;border-radius:999px;padding:9px 18px;cursor:pointer;align-self:flex-start}
-.btn:hover{filter:brightness(1.06)}
-.btn.ghost{background:none;color:var(--muted);border:1px solid rgba(134,150,160,.3)}
-.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tag{font-size:.72rem;color:var(--muted);font-family:var(--display);letter-spacing:.05em}
-.tag.edit{color:var(--green)}
-select,input[type=text],input[type=number],textarea,.toggle button{
- font-family:var(--display);font-weight:600;background:#0B141A;color:var(--text);
- border:1px solid rgba(134,150,160,.25);border-radius:12px;padding:8px 14px;font-size:.82rem}
-select,.toggle button{border-radius:999px;cursor:pointer}
-textarea{font-family:var(--body);font-weight:400;width:100%;min-height:96px;resize:vertical;line-height:1.5;border-radius:12px}
-input[type=text],input[type=number]{width:100%}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--green)}
-.toggle{display:inline-flex;gap:6px;margin-bottom:8px}
-.toggle button.active{background:var(--green);color:#0B141A;border-color:var(--green)}
-.controls{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-.field{display:flex;flex-direction:column;gap:5px}
-.field.grow{flex:1;min-width:110px}
-label.tag{margin-bottom:0}
-.grid2{display:flex;gap:10px;flex-wrap:wrap}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsBizPro — Asset Exporter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #0B141A;
+      --panel: #202C33;
+      --out: #005C4B;
+      --in: #202C33;
+      --green: #25D366;
+      --teal: #128C7E;
+      --text: #E9EDEF;
+      --muted: #8696A0;
+      --tick: #53BDEB;
+      --display: 'Space Grotesk', sans-serif;
+      --body: 'Inter', sans-serif;
+      --bsize: 17px;
+      --bwidth: 340px;
+    }
 
-/* ---- exact element styles (from the source deck) ---- */
-.bubble{position:relative;display:inline-block;padding:16px 20px 22px;border-radius:14px;
- font-family:var(--body);font-size:var(--bsize);line-height:1.4;color:var(--text);max-width:var(--bwidth)}
-.bubble.in{background:var(--in);border-top-left-radius:4px;font-weight:400}
-.bubble.out{background:var(--out);border-top-right-radius:4px;font-weight:500}
-.bubble.out::before{content:"";position:absolute;top:2px;right:-4px;width:9px;height:9px;
- background:var(--out);transform:rotate(45deg)}
-.bubble b{color:#fff;font-weight:600}
-.bubble .meta{position:absolute;bottom:7px;right:13px;display:flex;align-items:center;gap:4px;
- font-size:9px;color:rgba(233,237,239,.5)}
-.btext{outline:none;display:block;min-width:40px}
-.ticks{width:13px;height:9px;display:inline-block}.ticks svg{width:100%;height:100%;fill:var(--tick)}
-.wordmark{font-family:var(--display);font-weight:700;font-size:56px;letter-spacing:-.03em;line-height:1;white-space:nowrap}
-.wordmark .g{color:var(--green)}
-.tile{width:150px;height:150px;border-radius:34px;background:var(--green);display:flex;align-items:center;justify-content:center}
-.bgbox{position:relative;overflow:hidden;border-radius:8px}
-.bgbox::after{content:"";position:absolute;inset:0;background-image:var(--doodle);background-size:120px 120px;opacity:var(--doodleop,0)}
-</style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      background: #05080a;
+      color: var(--text);
+      font-family: var(--body);
+      padding: 26px 18px 90px
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin-bottom: 4px
+    }
+
+    h1 b {
+      color: var(--green)
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: .9rem;
+      max-width: 780px;
+      margin-bottom: 8px;
+      line-height: 1.55
+    }
+
+    .lead b {
+      color: var(--text);
+      font-weight: 600
+    }
+
+    h2 {
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 34px 0 16px;
+      border-top: 1px solid rgba(134, 150, 160, .18);
+      padding-top: 22px
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: flex-start
+    }
+
+    .card {
+      background: rgba(17, 27, 33, .7);
+      border: 1px solid rgba(134, 150, 160, .16);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 440px
+    }
+
+    .card.builder {
+      max-width: 560px;
+      border-color: rgba(37, 211, 102, .4)
+    }
+
+    .preview {
+      border-radius: 10px;
+      overflow: hidden;
+      background-image: linear-gradient(45deg, #1a2830 25%, transparent 25%), linear-gradient(-45deg, #1a2830 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a2830 75%), linear-gradient(-45deg, transparent 75%, #1a2830 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      padding: 14px;
+      display: flex
+    }
+
+    .btn {
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: .82rem;
+      color: #0B141A;
+      background: var(--green);
+      border: none;
+      border-radius: 999px;
+      padding: 9px 18px;
+      cursor: pointer;
+      align-self: flex-start
+    }
+
+    .btn:hover {
+      filter: brightness(1.06)
+    }
+
+    .btn.ghost {
+      background: none;
+      color: var(--muted);
+      border: 1px solid rgba(134, 150, 160, .3)
+    }
+
+    .btnrow {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .tag {
+      font-size: .72rem;
+      color: var(--muted);
+      font-family: var(--display);
+      letter-spacing: .05em
+    }
+
+    .tag.edit {
+      color: var(--green)
+    }
+
+    select,
+    input[type=text],
+    input[type=number],
+    textarea,
+    .toggle button {
+      font-family: var(--display);
+      font-weight: 600;
+      background: #0B141A;
+      color: var(--text);
+      border: 1px solid rgba(134, 150, 160, .25);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: .82rem
+    }
+
+    select,
+    .toggle button {
+      border-radius: 999px;
+      cursor: pointer
+    }
+
+    textarea {
+      font-family: var(--body);
+      font-weight: 400;
+      width: 100%;
+      min-height: 96px;
+      resize: vertical;
+      line-height: 1.5;
+      border-radius: 12px
+    }
+
+    input[type=text],
+    input[type=number] {
+      width: 100%
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--green)
+    }
+
+    .toggle {
+      display: inline-flex;
+      gap: 6px;
+      margin-bottom: 8px
+    }
+
+    .toggle button.active {
+      background: var(--green);
+      color: #0B141A;
+      border-color: var(--green)
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .field.grow {
+      flex: 1;
+      min-width: 110px
+    }
+
+    label.tag {
+      margin-bottom: 0
+    }
+
+    .grid2 {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    /* ---- exact element styles (from the source deck) ---- */
+    .bubble {
+      position: relative;
+      display: inline-block;
+      padding: 16px 20px 22px;
+      border-radius: 14px;
+      font-family: var(--body);
+      font-size: var(--bsize);
+      line-height: 1.4;
+      color: var(--text);
+      max-width: var(--bwidth)
+    }
+
+    .bubble.in {
+      background: var(--in);
+      border-top-left-radius: 4px;
+      font-weight: 400
+    }
+
+    .bubble.out {
+      background: var(--out);
+      border-top-right-radius: 4px;
+      font-weight: 500
+    }
+
+    .bubble.out::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      right: -4px;
+      width: 9px;
+      height: 9px;
+      background: var(--out);
+      transform: rotate(45deg)
+    }
+
+    .bubble b {
+      color: #fff;
+      font-weight: 600
+    }
+
+    .bubble .meta {
+      position: absolute;
+      bottom: 7px;
+      right: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: rgba(233, 237, 239, .5)
+    }
+
+    .btext {
+      outline: none;
+      display: block;
+      min-width: 40px
+    }
+
+    .ticks {
+      width: 13px;
+      height: 9px;
+      display: inline-block
+    }
+
+    .ticks svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--tick)
+    }
+
+    .wordmark {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 56px;
+      letter-spacing: -.03em;
+      line-height: 1;
+      white-space: nowrap
+    }
+
+    .wordmark .g {
+      color: var(--green)
+    }
+
+    .tile {
+      width: 150px;
+      height: 150px;
+      border-radius: 34px;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .bgbox {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px
+    }
+
+    .bgbox::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--doodle);
+      background-size: 120px 120px;
+      opacity: var(--doodleop, 0)
+    }
+
+    /* ===== mockup + logo additions ===== */
+    .mock-wrap {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      align-items: flex-start
+    }
+
+    .mock-controls {
+      flex: 1 1 320px;
+      min-width: 300px;
+      max-width: 470px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    .msg-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .msg-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      background: rgba(17, 27, 33, .6);
+      border: 1px solid rgba(134, 150, 160, .16);
+      border-radius: 12px;
+      padding: 6px
+    }
+
+    .msg-row select {
+      padding: 6px 8px;
+      border-radius: 10px;
+      font-size: .76rem
+    }
+
+    .msg-row input[type=text] {
+      flex: 1;
+      min-width: 60px;
+      padding: 6px 9px;
+      border-radius: 10px;
+      font-size: .78rem
+    }
+
+    .msg-row input.t {
+      flex: 0 0 62px;
+      min-width: 0
+    }
+
+    .msg-row .del {
+      background: none;
+      border: 1px solid rgba(134, 150, 160, .3);
+      color: var(--muted);
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 6px 10px;
+      font-family: var(--display);
+      font-weight: 600
+    }
+
+    .msg-row .del:hover {
+      color: #ff6b6b;
+      border-color: rgba(255, 107, 107, .5)
+    }
+
+    .chk {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      font-size: .72rem;
+      font-family: var(--display);
+      cursor: pointer;
+      user-select: none
+    }
+
+    .chk input {
+      width: 14px;
+      height: 14px
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: .74rem;
+      line-height: 1.5;
+      font-family: var(--body)
+    }
+
+    .note b {
+      color: var(--text)
+    }
+
+    .logo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px
+    }
+
+    .logo-card {
+      background: rgba(17, 27, 33, .7);
+      border: 1px solid rgba(134, 150, 160, .16);
+      border-radius: 14px;
+      padding: 12px;
+      width: 156px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      align-items: center
+    }
+
+    .logo-card .thumb {
+      width: 100%;
+      height: 112px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background-image: linear-gradient(45deg, #1a2830 25%, transparent 25%), linear-gradient(-45deg, #1a2830 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a2830 75%), linear-gradient(-45deg, transparent 75%, #1a2830 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0
+    }
+
+    .logo-card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain
+    }
+
+    .logo-card .nm {
+      font-size: .64rem;
+      color: var(--muted);
+      font-family: var(--display);
+      text-align: center;
+      word-break: break-all;
+      line-height: 1.35
+    }
+
+    .miss {
+      color: var(--muted);
+      font-size: .68rem;
+      text-align: center;
+      padding: 8px;
+      font-family: var(--display);
+      line-height: 1.4
+    }
+
+    /* ---- device stage ---- */
+    .stage {
+      display: inline-block;
+      padding: 0
+    }
+
+    /* phone */
+    .phone {
+      width: 340px;
+      background: #05080a;
+      border-radius: 46px;
+      padding: 11px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .5);
+      position: relative
+    }
+
+    .phone .notch {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 118px;
+      height: 26px;
+      background: #05080a;
+      border-radius: 0 0 16px 16px;
+      z-index: 3
+    }
+
+    .screen {
+      border-radius: 36px;
+      overflow: hidden;
+      height: 712px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg)
+    }
+
+    .wa {
+      display: flex;
+      flex-direction: column;
+      height: 100%
+    }
+
+    .wa-top {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 14px 12px 12px;
+      background: var(--panel)
+    }
+
+    .wa-top .ic {
+      color: var(--muted);
+      display: flex;
+      align-items: center
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .wa-name {
+      font-family: var(--display);
+      font-weight: 600;
+      color: var(--text);
+      font-size: .98rem;
+      line-height: 1.15
+    }
+
+    .wa-stat {
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.2
+    }
+
+    .wa-top .grow {
+      flex: 1
+    }
+
+    .wa-icons {
+      display: flex;
+      gap: 15px;
+      color: var(--muted);
+      align-items: center
+    }
+
+    .wa-body {
+      flex: 1;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 8px;
+      overflow: hidden;
+      background-color: var(--bg);
+      background-repeat: repeat
+    }
+
+    .wa-body .bubble {
+      max-width: 80%;
+      font-size: 15px
+    }
+
+    .wa-body .bubble.in {
+      align-self: flex-start
+    }
+
+    .wa-body .bubble.out {
+      align-self: flex-end
+    }
+
+    .wa-input {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      background: var(--panel)
+    }
+
+    .wa-input .ic {
+      color: var(--muted);
+      display: flex;
+      align-items: center
+    }
+
+    .wa-field {
+      flex: 1;
+      background: #2A3942;
+      color: var(--muted);
+      border-radius: 22px;
+      padding: 11px 14px;
+      font-size: .9rem
+    }
+
+    .wa-send {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      color: #0B141A
+    }
+
+    /* desktop / laptop */
+    .laptop {
+      display: inline-block;
+      background: linear-gradient(#243541, #0e171d);
+      padding: 16px 16px 0;
+      border-radius: 22px;
+      position: relative
+    }
+
+    .win {
+      width: 900px;
+      height: 566px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      background: var(--bg)
+    }
+
+    .plainwin {
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .5)
+    }
+
+    .laptop-base {
+      height: 22px;
+      background: linear-gradient(#c9d2d8, #8a969e);
+      border-radius: 0 0 16px 16px;
+      position: relative;
+      margin-top: 0
+    }
+
+    .laptop-base::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 8px;
+      background: #68727a;
+      border-radius: 0 0 9px 9px
+    }
+
+    .wa-side {
+      width: 298px;
+      background: #111B21;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(134, 150, 160, .1)
+    }
+
+    .side-top {
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel)
+    }
+
+    .side-top .grow {
+      flex: 1
+    }
+
+    .side-top .ic {
+      color: var(--muted);
+      display: flex
+    }
+
+    .search {
+      margin: 8px 10px 4px;
+      background: #202C33;
+      border-radius: 10px;
+      padding: 9px 13px;
+      color: var(--muted);
+      font-size: .8rem
+    }
+
+    .chat-row {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      align-items: center;
+      border-bottom: 1px solid rgba(134, 150, 160, .06)
+    }
+
+    .chat-row.active {
+      background: rgba(37, 211, 102, .07)
+    }
+
+    .chat-row .avatar {
+      width: 44px;
+      height: 44px
+    }
+
+    .chat-row .meta2 {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    .chat-row .nm2 {
+      color: var(--text);
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: .86rem
+    }
+
+    .chat-row .snip {
+      color: var(--muted);
+      font-size: .76rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px
+    }
+
+    .chat-row .rt {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px
+    }
+
+    .chat-row .tm {
+      color: var(--muted);
+      font-size: .66rem
+    }
+
+    .badge {
+      background: var(--green);
+      color: #0B141A;
+      font-size: .66rem;
+      font-weight: 700;
+      border-radius: 999px;
+      min-width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5px;
+      font-family: var(--display)
+    }
+
+    .wa-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0
+    }
+
+    .wa-main .wa {
+      height: 100%
+    }
+
+    /* light chat theme */
+    .wa[data-theme=light] .wa-body {
+      background-color: #E4DDD4
+    }
+
+    .wa[data-theme=light] .bubble.in {
+      background: #fff;
+      color: #111B21
+    }
+
+    .wa[data-theme=light] .bubble.in b {
+      color: #111B21
+    }
+
+    .wa[data-theme=light] .bubble.out {
+      background: #D9FDD3;
+      color: #111B21
+    }
+
+    .wa[data-theme=light] .bubble.out b {
+      color: #111B21
+    }
+
+    .wa[data-theme=light] .bubble.out::before {
+      background: #D9FDD3
+    }
+
+    .wa[data-theme=light] .bubble .meta {
+      color: rgba(0, 0, 0, .45)
+    }
+
+    .wa[data-theme=light] .wa-top {
+      background: #F0F2F5
+    }
+
+    .wa[data-theme=light] .wa-name {
+      color: #111B21
+    }
+
+    .wa[data-theme=light] .wa-stat {
+      color: #54656F
+    }
+
+    .wa[data-theme=light] .wa-input {
+      background: #F0F2F5
+    }
+
+    .wa[data-theme=light] .wa-field {
+      background: #fff;
+      color: #8696A0
+    }
+  </style>
 </head>
+
 <body>
-<h1>Whats<b>Biz</b>Pro &middot; Asset Exporter</h1>
-<p class="lead">Every reusable piece from your deck, with <b>editable text</b>. Type your own copy,
-then download as a PNG with a <b>transparent background</b> (checkerboard = see-through) at 2×
-resolution, ready to drop into Canva.</p>
-<p class="lead">Two ways to edit: use the <b>Bubble builder</b> below to write a brand-new message,
-or <b>click directly on any preset bubble's text</b> and type over it. For <b>bold</b>, select
-text and hit Ctrl/Cmd&nbsp;+&nbsp;B, or wrap it in <b>**double asterisks**</b> in the builder.</p>
+  <h1>Whats<b>Biz</b>Pro &middot; Asset Exporter</h1>
+  <p class="lead">Every reusable piece from your deck, with <b>editable text</b>. Type your own copy,
+    then download as a PNG with a <b>transparent background</b> (checkerboard = see-through) at 2×
+    resolution, ready to drop into Canva.</p>
+  <p class="lead">Two ways to edit: use the <b>Bubble builder</b> below to write a brand-new message,
+    or <b>click directly on any preset bubble's text</b> and type over it. For <b>bold</b>, select
+    text and hit Ctrl/Cmd&nbsp;+&nbsp;B, or wrap it in <b>**double asterisks**</b> in the builder.</p>
 
-<h2>Bubble builder — write your own</h2>
-<div class="row">
- <div class="card builder">
-  <div class="preview"><div class="bubble out" id="bPrev"><span class="btext" id="bPrevText"></span><span class="meta" id="bPrevMeta"></span></div></div>
-  <div class="field">
-   <label class="tag edit">Message text — **asterisks** make bold</label>
-   <textarea id="bText">Your WhatsApp co-pilot. **You stay in control.**</textarea>
+  <h2>Bubble builder — write your own</h2>
+  <div class="row">
+    <div class="card builder">
+      <div class="preview">
+        <div class="bubble out" id="bPrev"><span class="btext" id="bPrevText"></span><span class="meta"
+            id="bPrevMeta"></span></div>
+      </div>
+      <div class="field">
+        <label class="tag edit">Message text — **asterisks** make bold</label>
+        <textarea id="bText">Your WhatsApp co-pilot. **You stay in control.**</textarea>
+      </div>
+      <div class="grid2">
+        <div class="field grow">
+          <label class="tag">Bubble type</label>
+          <select id="bDir">
+            <option value="out">Sent · green</option>
+            <option value="in">Received · grey</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label class="tag">Timestamp</label>
+          <input type="text" id="bTime" value="now">
+        </div>
+        <div class="field grow">
+          <label class="tag">Blue ticks</label>
+          <select id="bTicks">
+            <option value="yes">Show</option>
+            <option value="no">Hide</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field grow">
+          <label class="tag">Text size (px)</label>
+          <input type="number" id="bSize" value="17" min="9" max="60">
+        </div>
+        <div class="field grow">
+          <label class="tag">Max width (px)</label>
+          <input type="number" id="bWidth" value="340" min="120" max="900">
+        </div>
+        <div class="field grow">
+          <label class="tag">File name</label>
+          <input type="text" id="bFile" value="bubble-custom">
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="bDl">Download PNG</button>
+        <span class="tag">exports at 2× · transparent</span>
+      </div>
+    </div>
   </div>
-  <div class="grid2">
-   <div class="field grow">
-    <label class="tag">Bubble type</label>
-    <select id="bDir">
-     <option value="out">Sent · green</option>
-     <option value="in">Received · grey</option>
+
+  <h2>Backgrounds</h2>
+  <div class="controls">
+    <label class="tag">Size</label>
+    <select id="bgSize">
+      <option value="1080x1080">Square · 1080×1080</option>
+      <option value="1080x1920">Story / Reel · 1080×1920</option>
+      <option value="1080x1350">Portrait · 1080×1350</option>
+      <option value="1920x1080">Landscape · 1920×1080</option>
     </select>
-   </div>
-   <div class="field grow">
-    <label class="tag">Timestamp</label>
-    <input type="text" id="bTime" value="now">
-   </div>
-   <div class="field grow">
-    <label class="tag">Blue ticks</label>
-    <select id="bTicks"><option value="yes">Show</option><option value="no">Hide</option></select>
-   </div>
+    <label class="tag">Pattern</label>
+    <select id="bgPat">
+      <option value="on">With doodle</option>
+      <option value="off">Plain gradient</option>
+    </select>
   </div>
-  <div class="grid2">
-   <div class="field grow">
-    <label class="tag">Text size (px)</label>
-    <input type="number" id="bSize" value="17" min="9" max="60">
-   </div>
-   <div class="field grow">
-    <label class="tag">Max width (px)</label>
-    <input type="number" id="bWidth" value="340" min="120" max="900">
-   </div>
-   <div class="field grow">
-    <label class="tag">File name</label>
-    <input type="text" id="bFile" value="bubble-custom">
-   </div>
+  <div class="row" id="bgRow"></div>
+
+  <h2>Preset bubbles — click the text to edit</h2>
+  <div class="controls">
+    <div class="toggle" id="langToggle">
+      <button data-l="en" class="active">EN</button>
+      <button data-l="es">ES</button>
+    </div>
+    <label class="tag">Text size</label>
+    <input type="number" id="gSize" value="17" min="9" max="60" style="width:90px">
+    <label class="tag">Max width</label>
+    <input type="number" id="gWidth" value="340" min="120" max="900" style="width:90px">
+    <button class="btn ghost" id="resetAll">Reset text</button>
   </div>
-  <div class="btnrow">
-   <button class="btn" id="bDl">Download PNG</button>
-   <span class="tag">exports at 2× · transparent</span>
+  <div class="row" id="bubbleRow"></div>
+
+  <h2>Logo &amp; elements</h2>
+  <div class="row" id="elemRow"></div>
+
+  <h2>Brand logos &mdash; from your logo folder</h2>
+  <p class="lead">Loads the PNGs from the folder path below. For <b>clean downloads</b> in the mockups,
+    either open this page through a local server (<b>python&nbsp;-m&nbsp;http.server</b> in the folder, then
+    visit localhost) or click <b>Load logo files</b> and pick the PNGs &mdash; loaded files always export.</p>
+  <div class="controls">
+    <div class="field"><label class="tag">Logo folder path</label>
+      <input type="text" id="logoBase" value="./WhatsBizPro logo/" placeholder="./ or ./WhatsBizPro logo/" style="width:240px">
+    </div>
+    <button class="btn ghost" id="logoReload">Reload from path</button>
+    <label class="btn" style="cursor:pointer;color:#0B141A">Load logo files&hellip;
+      <input type="file" id="logoFiles" accept="image/png,image/*" multiple hidden></label>
   </div>
- </div>
-</div>
+  <div class="logo-grid" id="logoGrid"></div>
 
-<h2>Backgrounds</h2>
-<div class="controls">
- <label class="tag">Size</label>
- <select id="bgSize">
-  <option value="1080x1080">Square · 1080×1080</option>
-  <option value="1080x1920">Story / Reel · 1080×1920</option>
-  <option value="1080x1350">Portrait · 1080×1350</option>
-  <option value="1920x1080">Landscape · 1920×1080</option>
- </select>
- <label class="tag">Pattern</label>
- <select id="bgPat"><option value="on">With doodle</option><option value="off">Plain gradient</option></select>
-</div>
-<div class="row" id="bgRow"></div>
+  <h2>Phone mockup &mdash; editable WhatsApp chat</h2>
+  <p class="lead">Edit the header, pick a logo as the avatar, add or change messages, then download a
+    transparent PNG (or on a brand background) to drop into your ad.</p>
+  <div class="mock-wrap">
+    <div class="mock-controls" id="phoneControls"></div>
+    <div>
+      <div class="stage" id="phoneStage"></div>
+    </div>
+  </div>
 
-<h2>Preset bubbles — click the text to edit</h2>
-<div class="controls">
- <div class="toggle" id="langToggle">
-  <button data-l="en" class="active">EN</button>
-  <button data-l="es">ES</button>
- </div>
- <label class="tag">Text size</label>
- <input type="number" id="gSize" value="17" min="9" max="60" style="width:90px">
- <label class="tag">Max width</label>
- <input type="number" id="gWidth" value="340" min="120" max="900" style="width:90px">
- <button class="btn ghost" id="resetAll">Reset text</button>
-</div>
-<div class="row" id="bubbleRow"></div>
+  <h2>Computer mockup &mdash; WhatsApp Web</h2>
+  <div class="mock-wrap">
+    <div class="mock-controls" id="deskControls"></div>
+    <div style="max-width:100%;overflow:auto">
+      <div class="stage" id="deskStage"></div>
+    </div>
+  </div>
 
-<h2>Logo &amp; elements</h2>
-<div class="row" id="elemRow"></div>
 
-<script>
-const TICKS='<span class="ticks"><svg viewBox="0 0 16 11"><path d="M11.07.65l-.55-.42a.28.28 0 0 0-.4.06L5.35 6.46 3.6 4.8a.28.28 0 0 0-.4 0l-.5.5a.28.28 0 0 0 0 .4l2.4 2.32c.13.12.34.1.44-.04L11.13 1.05a.28.28 0 0 0-.06-.4z"/><path d="M15.07.65l-.55-.42a.28.28 0 0 0-.4.06L9.35 6.46l-.7-.66-.9 1.17.95.92c.13.12.34.1.44-.04L15.13 1.05a.28.28 0 0 0-.06-.4z"/></svg></span>';
-const DOODLE="url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23E9EDEF' stroke-width='1.6' opacity='0.9'%3E%3Cpath d='M34 46a16 16 0 1 1 7 13l-11 3 4-9a16 16 0 0 1 0-7z'/%3E%3Ccircle cx='162' cy='34' r='12'/%3E%3Cpath d='M154 34l6 6 10-11'/%3E%3Crect x='232' y='68' width='30' height='21' rx='4'/%3E%3Cpath d='M232 73l15 9 15-9'/%3E%3Cpath d='M70 162h34M70 171h23M70 180h30'/%3E%3Crect x='60' y='150' width='53' height='42' rx='7'/%3E%3Cpath d='M196 162l12 26 7-14 14-5z'/%3E%3Cpath d='M46 244c0-9 7-16 16-16s16 7 16 16M62 228v-9'/%3E%3Ccircle cx='242' cy='232' r='14'/%3E%3Cpath d='M242 223v9l7 5'/%3E%3Cpath d='M138 254l9-9 9 9-9 9z'/%3E%3C/g%3E%3C/svg%3E\")";
-const GRAD="radial-gradient(120% 90% at 78% 8%, rgba(18,140,126,.28) 0%, transparent 55%),radial-gradient(90% 70% at 12% 100%, rgba(37,211,102,.14) 0%, transparent 60%),var(--bg)";
+  <script>
+    const TICKS = '<span class="ticks"><svg viewBox="0 0 16 11"><path d="M11.07.65l-.55-.42a.28.28 0 0 0-.4.06L5.35 6.46 3.6 4.8a.28.28 0 0 0-.4 0l-.5.5a.28.28 0 0 0 0 .4l2.4 2.32c.13.12.34.1.44-.04L11.13 1.05a.28.28 0 0 0-.06-.4z"/><path d="M15.07.65l-.55-.42a.28.28 0 0 0-.4.06L9.35 6.46l-.7-.66-.9 1.17.95.92c.13.12.34.1.44-.04L15.13 1.05a.28.28 0 0 0-.06-.4z"/></svg></span>';
+    const DOODLE = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23E9EDEF' stroke-width='1.6' opacity='0.9'%3E%3Cpath d='M34 46a16 16 0 1 1 7 13l-11 3 4-9a16 16 0 0 1 0-7z'/%3E%3Ccircle cx='162' cy='34' r='12'/%3E%3Cpath d='M154 34l6 6 10-11'/%3E%3Crect x='232' y='68' width='30' height='21' rx='4'/%3E%3Cpath d='M232 73l15 9 15-9'/%3E%3Cpath d='M70 162h34M70 171h23M70 180h30'/%3E%3Crect x='60' y='150' width='53' height='42' rx='7'/%3E%3Cpath d='M196 162l12 26 7-14 14-5z'/%3E%3Cpath d='M46 244c0-9 7-16 16-16s16 7 16 16M62 228v-9'/%3E%3Ccircle cx='242' cy='232' r='14'/%3E%3Cpath d='M242 223v9l7 5'/%3E%3Cpath d='M138 254l9-9 9 9-9 9z'/%3E%3C/g%3E%3C/svg%3E\")";
+    const GRAD = "radial-gradient(120% 90% at 78% 8%, rgba(18,140,126,.28) 0%, transparent 55%),radial-gradient(90% 70% at 12% 100%, rgba(37,211,102,.14) 0%, transparent 60%),var(--bg)";
 
-const BUBBLES={
- en:[
-  ["cover","out","Your WhatsApp co-pilot. You stay in control."],
-  ["company","in","WhatsBizPro turns WhatsApp into a workstation. Sales reps, doctors, lawyers, recruiters; <b>anyone whose job runs through WhatsApp</b> gets an assistant that organizes, categorizes, and responds alongside them."],
-  ["mission","in","The problem isn\u2019t a lack of tools. It\u2019s a job that lives in a chat thread with no memory. We give it one: <b>CRM, scheduling, broadcasting, voice-to-text</b>, and an assistant you can ask &ldquo;what happened here.&rdquo;"],
-  ["mission2","out","English and Spanish. Nothing else, on purpose."],
-  ["values","in","The AI doesn\u2019t take the job; it removes the load around it. A doctor\u2019s assistant still talks to the patient. The tool just makes sure <b>nothing gets lost</b>."],
-  ["target","in","Sales reps, recruitment agencies, family medicine doctors, lawyers. Not &ldquo;small business.&rdquo; People whose real problem is <b>client and patient communication turning into chaos</b> with no system behind it."],
-  ["advantage","in","A Chrome extension, simple, and it doesn\u2019t ask you to trust an AI agent with your job. Two tiers; simple, and advanced on the Meta API. The fear of AI replacing people is <b>real</b>."],
-  ["advantage2","out","We\u2019re built against it, not inside it."],
-  ["plan","out","Revenue is subscription. Full stop."],
-  ["risk","in","The extension sits right at the edge of what the terms tolerate. The fix is the five-year goal ; <b>get WhatsApp to recognize us officially</b>."],
-  ["risk2","out","Until then, the business is a guest in someone else\u2019s house. And it knows it."]
- ],
- es:[
-  ["portada","out","Tu copiloto de WhatsApp. T\u00fa mantienes el control."],
-  ["empresa","in","WhatsBizPro convierte WhatsApp en una estaci\u00f3n de trabajo. Vendedores, doctores, abogados, reclutadores; <b>cualquiera cuyo trabajo corre por WhatsApp</b> recibe un asistente que organiza, categoriza y responde a su lado."],
-  ["mision","in","El problema no es falta de herramientas. Es un trabajo que vive en un chat sin memoria. Se la damos: <b>CRM, programaci\u00f3n, difusi\u00f3n, voz a texto</b>, y un asistente al que puedes preguntar &ldquo;qu\u00e9 pas\u00f3 aqu\u00ed&rdquo;."],
-  ["mision2","out","Ingl\u00e9s y espa\u00f1ol. Nada m\u00e1s, a prop\u00f3sito."],
-  ["valores","in","La IA no se queda con el trabajo; le quita la carga. El asistente de un doctor sigue hablando con el paciente. La herramienta solo se asegura de que <b>nada se pierda</b>."],
-  ["cliente","in","Vendedores, agencias de reclutamiento, doctores de medicina familiar, abogados. No &ldquo;peque\u00f1as empresas.&rdquo; Gente cuyo problema real es que <b>la comunicaci\u00f3n con clientes y pacientes se vuelve un caos</b> sin un sistema detr\u00e1s."],
-  ["ventaja","in","Una extensi\u00f3n de Chrome, simple, y no te pide confiarle tu trabajo a un agente de IA. Dos niveles; simple, y avanzado sobre la API de Meta. El miedo a que la IA reemplace a la gente es <b>real</b>."],
-  ["ventaja2","out","Estamos construidos contra \u00e9l, no dentro de \u00e9l."],
-  ["plan","out","Los ingresos son por suscripci\u00f3n. Punto."],
-  ["riesgo","in","La extensi\u00f3n est\u00e1 justo al borde de lo que los t\u00e9rminos toleran. La soluci\u00f3n es la meta a cinco a\u00f1os; <b>que WhatsApp nos reconozca oficialmente</b>."],
-  ["riesgo2","out","Hasta entonces, el negocio es un invitado en casa ajena. Y lo sabe."]
- ]
-};
+    const BUBBLES = {
+      en: [
+        ["cover", "out", "Your WhatsApp co-pilot. You stay in control."],
+        ["company", "in", "WhatsBizPro turns WhatsApp into a workstation. Sales reps, doctors, lawyers, recruiters; <b>anyone whose job runs through WhatsApp</b> gets an assistant that organizes, categorizes, and responds alongside them."],
+        ["mission", "in", "The problem isn\u2019t a lack of tools. It\u2019s a job that lives in a chat thread with no memory. We give it one: <b>CRM, scheduling, broadcasting, voice-to-text</b>, and an assistant you can ask &ldquo;what happened here.&rdquo;"],
+        ["mission2", "out", "English and Spanish. Nothing else, on purpose."],
+        ["values", "in", "The AI doesn\u2019t take the job; it removes the load around it. A doctor\u2019s assistant still talks to the patient. The tool just makes sure <b>nothing gets lost</b>."],
+        ["target", "in", "Sales reps, recruitment agencies, family medicine doctors, lawyers. Not &ldquo;small business.&rdquo; People whose real problem is <b>client and patient communication turning into chaos</b> with no system behind it."],
+        ["advantage", "in", "A Chrome extension, simple, and it doesn\u2019t ask you to trust an AI agent with your job. Two tiers; simple, and advanced on the Meta API. The fear of AI replacing people is <b>real</b>."],
+        ["advantage2", "out", "We\u2019re built against it, not inside it."],
+        ["plan", "out", "Revenue is subscription. Full stop."],
+        ["risk", "in", "The extension sits right at the edge of what the terms tolerate. The fix is the five-year goal ; <b>get WhatsApp to recognize us officially</b>."],
+        ["risk2", "out", "Until then, the business is a guest in someone else\u2019s house. And it knows it."]
+      ],
+      es: [
+        ["portada", "out", "Tu copiloto de WhatsApp. T\u00fa mantienes el control."],
+        ["empresa", "in", "WhatsBizPro convierte WhatsApp en una estaci\u00f3n de trabajo. Vendedores, doctores, abogados, reclutadores; <b>cualquiera cuyo trabajo corre por WhatsApp</b> recibe un asistente que organiza, categoriza y responde a su lado."],
+        ["mision", "in", "El problema no es falta de herramientas. Es un trabajo que vive en un chat sin memoria. Se la damos: <b>CRM, programaci\u00f3n, difusi\u00f3n, voz a texto</b>, y un asistente al que puedes preguntar &ldquo;qu\u00e9 pas\u00f3 aqu\u00ed&rdquo;."],
+        ["mision2", "out", "Ingl\u00e9s y espa\u00f1ol. Nada m\u00e1s, a prop\u00f3sito."],
+        ["valores", "in", "La IA no se queda con el trabajo; le quita la carga. El asistente de un doctor sigue hablando con el paciente. La herramienta solo se asegura de que <b>nada se pierda</b>."],
+        ["cliente", "in", "Vendedores, agencias de reclutamiento, doctores de medicina familiar, abogados. No &ldquo;peque\u00f1as empresas.&rdquo; Gente cuyo problema real es que <b>la comunicaci\u00f3n con clientes y pacientes se vuelve un caos</b> sin un sistema detr\u00e1s."],
+        ["ventaja", "in", "Una extensi\u00f3n de Chrome, simple, y no te pide confiarle tu trabajo a un agente de IA. Dos niveles; simple, y avanzado sobre la API de Meta. El miedo a que la IA reemplace a la gente es <b>real</b>."],
+        ["ventaja2", "out", "Estamos construidos contra \u00e9l, no dentro de \u00e9l."],
+        ["plan", "out", "Los ingresos son por suscripci\u00f3n. Punto."],
+        ["riesgo", "in", "La extensi\u00f3n est\u00e1 justo al borde de lo que los t\u00e9rminos toleran. La soluci\u00f3n es la meta a cinco a\u00f1os; <b>que WhatsApp nos reconozca oficialmente</b>."],
+        ["riesgo2", "out", "Hasta entonces, el negocio es un invitado en casa ajena. Y lo sabe."]
+      ]
+    };
 
-/* ---------- helpers ---------- */
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-// **bold** -> <b>, newlines -> <br>
-function mdToHtml(s){
- return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
-}
-async function dl(node, filename, scale, transparent){
- if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
- window.getSelection().removeAllRanges();
- await new Promise(r=>setTimeout(r,30));
- const canvas=await html2canvas(node,{scale:scale||2,backgroundColor:transparent?null:'#0B141A',useCORS:true});
- const a=document.createElement('a');
- a.download=filename.replace(/\.png$/i,'')+'.png';
- a.href=canvas.toDataURL('image/png');a.click();
-}
-function card(previewNode, filename, opts){
- const c=document.createElement('div');c.className='card';
- const p=document.createElement('div');p.className='preview';p.appendChild(previewNode);
- const t=document.createElement('div');t.className='tag';t.textContent=filename;
- const b=document.createElement('button');b.className='btn';b.textContent='Download PNG';
- b.onclick=()=>dl(previewNode,filename,(opts&&opts.scale)||2,!(opts&&opts.solid));
- c.append(p,t,b);return c;
-}
+    /* ---------- helpers ---------- */
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    // **bold** -> <b>, newlines -> <br>
+    function mdToHtml(s) {
+      return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+    }
+    async function dl(node, filename, scale, transparent) {
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      window.getSelection().removeAllRanges();
+      await new Promise(r => setTimeout(r, 30));
+      const canvas = await html2canvas(node, { scale: scale || 2, backgroundColor: transparent ? null : '#0B141A', useCORS: true });
+      const a = document.createElement('a');
+      a.download = filename.replace(/\.png$/i, '') + '.png';
+      a.href = canvas.toDataURL('image/png'); a.click();
+    }
+    function card(previewNode, filename, opts) {
+      const c = document.createElement('div'); c.className = 'card';
+      const p = document.createElement('div'); p.className = 'preview'; p.appendChild(previewNode);
+      const t = document.createElement('div'); t.className = 'tag'; t.textContent = filename;
+      const b = document.createElement('button'); b.className = 'btn'; b.textContent = 'Download PNG';
+      b.onclick = () => dl(previewNode, filename, (opts && opts.scale) || 2, !(opts && opts.solid));
+      c.append(p, t, b); return c;
+    }
 
-/* ---------- bubble builder ---------- */
-const bPrev=document.getElementById('bPrev'), bPrevText=document.getElementById('bPrevText'),
-      bPrevMeta=document.getElementById('bPrevMeta');
-function syncBuilder(){
- const dir=document.getElementById('bDir').value;
- bPrev.className='bubble '+dir;
- bPrevText.innerHTML=mdToHtml(document.getElementById('bText').value)||'&nbsp;';
- const ticks=document.getElementById('bTicks').value==='yes';
- bPrevMeta.innerHTML=esc(document.getElementById('bTime').value)+' '+(ticks?TICKS:'');
- bPrev.style.fontSize=document.getElementById('bSize').value+'px';
- bPrev.style.maxWidth=document.getElementById('bWidth').value+'px';
-}
-['bText','bDir','bTime','bTicks','bSize','bWidth'].forEach(id=>{
- document.getElementById(id).addEventListener('input',syncBuilder);
- document.getElementById(id).addEventListener('change',syncBuilder);
-});
-document.getElementById('bDl').onclick=()=>
- dl(bPrev, document.getElementById('bFile').value||'bubble-custom', 2, true);
-syncBuilder();
+    /* ---------- bubble builder ---------- */
+    const bPrev = document.getElementById('bPrev'), bPrevText = document.getElementById('bPrevText'),
+      bPrevMeta = document.getElementById('bPrevMeta');
+    function syncBuilder() {
+      const dir = document.getElementById('bDir').value;
+      bPrev.className = 'bubble ' + dir;
+      bPrevText.innerHTML = mdToHtml(document.getElementById('bText').value) || '&nbsp;';
+      const ticks = document.getElementById('bTicks').value === 'yes';
+      bPrevMeta.innerHTML = esc(document.getElementById('bTime').value) + ' ' + (ticks ? TICKS : '');
+      bPrev.style.fontSize = document.getElementById('bSize').value + 'px';
+      bPrev.style.maxWidth = document.getElementById('bWidth').value + 'px';
+    }
+    ['bText', 'bDir', 'bTime', 'bTicks', 'bSize', 'bWidth'].forEach(id => {
+      document.getElementById(id).addEventListener('input', syncBuilder);
+      document.getElementById(id).addEventListener('change', syncBuilder);
+    });
+    document.getElementById('bDl').onclick = () =>
+      dl(bPrev, document.getElementById('bFile').value || 'bubble-custom', 2, true);
+    syncBuilder();
 
-/* ---------- preset bubbles (click-to-edit) ---------- */
-function renderBubbles(lang){
- const row=document.getElementById('bubbleRow');row.innerHTML='';
- BUBBLES[lang].forEach(([topic,dir,text])=>{
-  const el=document.createElement('div');el.className='bubble '+dir;
-  const span=document.createElement('span');
-  span.className='btext';span.setAttribute('contenteditable','true');span.innerHTML=text;
-  span.dataset.original=text;
-  const meta=document.createElement('span');meta.className='meta';
-  meta.innerHTML='now '+(dir==='out'?TICKS:'');
-  el.append(span,meta);
-  const c=card(el,`bubble-${lang}-${topic}-${dir}.png`);
-  const hint=document.createElement('div');hint.className='tag edit';
-  hint.textContent='✎ click the text to edit · Ctrl/Cmd+B for bold';
-  c.insertBefore(hint,c.querySelector('.btn'));
-  row.appendChild(c);
- });
-}
-document.getElementById('resetAll').onclick=()=>{
- document.querySelectorAll('#bubbleRow .btext').forEach(s=>s.innerHTML=s.dataset.original);
-};
-function applyGlobals(){
- document.documentElement.style.setProperty('--bsize',document.getElementById('gSize').value+'px');
- document.documentElement.style.setProperty('--bwidth',document.getElementById('gWidth').value+'px');
-}
-document.getElementById('gSize').addEventListener('input',applyGlobals);
-document.getElementById('gWidth').addEventListener('input',applyGlobals);
+    /* ---------- preset bubbles (click-to-edit) ---------- */
+    function renderBubbles(lang) {
+      const row = document.getElementById('bubbleRow'); row.innerHTML = '';
+      BUBBLES[lang].forEach(([topic, dir, text]) => {
+        const el = document.createElement('div'); el.className = 'bubble ' + dir;
+        const span = document.createElement('span');
+        span.className = 'btext'; span.setAttribute('contenteditable', 'true'); span.innerHTML = text;
+        span.dataset.original = text;
+        const meta = document.createElement('span'); meta.className = 'meta';
+        meta.innerHTML = 'now ' + (dir === 'out' ? TICKS : '');
+        el.append(span, meta);
+        const c = card(el, `bubble-${lang}-${topic}-${dir}.png`);
+        const hint = document.createElement('div'); hint.className = 'tag edit';
+        hint.textContent = '✎ click the text to edit · Ctrl/Cmd+B for bold';
+        c.insertBefore(hint, c.querySelector('.btn'));
+        row.appendChild(c);
+      });
+    }
+    document.getElementById('resetAll').onclick = () => {
+      document.querySelectorAll('#bubbleRow .btext').forEach(s => s.innerHTML = s.dataset.original);
+    };
+    function applyGlobals() {
+      document.documentElement.style.setProperty('--bsize', document.getElementById('gSize').value + 'px');
+      document.documentElement.style.setProperty('--bwidth', document.getElementById('gWidth').value + 'px');
+    }
+    document.getElementById('gSize').addEventListener('input', applyGlobals);
+    document.getElementById('gWidth').addEventListener('input', applyGlobals);
 
-/* ---------- backgrounds ---------- */
-function renderBackgrounds(){
- const row=document.getElementById('bgRow');row.innerHTML='';
- const [w,h]=document.getElementById('bgSize').value.split('x').map(Number);
- const pat=document.getElementById('bgPat').value==='on';
- const el=document.createElement('div');el.className='bgbox';
- const pw=Math.round(w/6),ph=Math.round(h/6);
- el.style.width=w+'px';el.style.height=h+'px';el.style.background=GRAD;
- el.style.setProperty('--doodle',DOODLE);el.style.setProperty('--doodleop',pat?'0.05':'0');
- const wrap=document.createElement('div');
- wrap.style.width=pw+'px';wrap.style.height=ph+'px';wrap.style.overflow='hidden';wrap.style.borderRadius='6px';
- el.style.transformOrigin='top left';el.style.transform=`scale(${pw/w})`;
- wrap.appendChild(el);
- const file=`bg-${pat?'patterned':'plain'}-${w}x${h}.png`;
- const c=card(wrap,file,{solid:true,scale:1});
- c.querySelector('.btn').onclick=()=>{
-   const prev=el.style.transform;el.style.transform='none';
-   dl(el,file,1,false).then(()=>{el.style.transform=prev;});
- };
- row.appendChild(c);
-}
+    /* ---------- backgrounds ---------- */
+    function renderBackgrounds() {
+      const row = document.getElementById('bgRow'); row.innerHTML = '';
+      const [w, h] = document.getElementById('bgSize').value.split('x').map(Number);
+      const pat = document.getElementById('bgPat').value === 'on';
+      const el = document.createElement('div'); el.className = 'bgbox';
+      const pw = Math.round(w / 6), ph = Math.round(h / 6);
+      el.style.width = w + 'px'; el.style.height = h + 'px'; el.style.background = GRAD;
+      el.style.setProperty('--doodle', DOODLE); el.style.setProperty('--doodleop', pat ? '0.05' : '0');
+      const wrap = document.createElement('div');
+      wrap.style.width = pw + 'px'; wrap.style.height = ph + 'px'; wrap.style.overflow = 'hidden'; wrap.style.borderRadius = '6px';
+      el.style.transformOrigin = 'top left'; el.style.transform = `scale(${pw / w})`;
+      wrap.appendChild(el);
+      const file = `bg-${pat ? 'patterned' : 'plain'}-${w}x${h}.png`;
+      const c = card(wrap, file, { solid: true, scale: 1 });
+      c.querySelector('.btn').onclick = () => {
+        const prev = el.style.transform; el.style.transform = 'none';
+        dl(el, file, 1, false).then(() => { el.style.transform = prev; });
+      };
+      row.appendChild(c);
+    }
 
-/* ---------- logo & elements ---------- */
-function renderElements(){
- const row=document.getElementById('elemRow');row.innerHTML='';
+    /* ---------- logo & elements ---------- */
+    function renderElements() {
+      const row = document.getElementById('elemRow'); row.innerHTML = '';
 
- // Editable wordmark: three inputs (prefix / accent / suffix)
- const wm=document.createElement('div');wm.className='wordmark';
- wm.innerHTML='<span id="wmA">Whats</span><span class="g" id="wmB">Biz</span><span id="wmC">Pro</span>';
- const c=card(wm,'logo-wordmark-white.png');
- const box=document.createElement('div');box.className='grid2';
- box.innerHTML=`
+      // Editable wordmark: three inputs (prefix / accent / suffix)
+      const wm = document.createElement('div'); wm.className = 'wordmark';
+      wm.innerHTML = '<span id="wmA">Whats</span><span class="g" id="wmB">Biz</span><span id="wmC">Pro</span>';
+      const c = card(wm, 'logo-wordmark-white.png');
+      const box = document.createElement('div'); box.className = 'grid2';
+      box.innerHTML = `
   <div class="field grow"><label class="tag edit">Text</label><input type="text" id="wmIn1" value="Whats"></div>
   <div class="field grow"><label class="tag edit">Accent (green)</label><input type="text" id="wmIn2" value="Biz"></div>
   <div class="field grow"><label class="tag edit">Text</label><input type="text" id="wmIn3" value="Pro"></div>
@@ -306,33 +1138,357 @@ function renderElements(){
     <option value="#0B141A">Dark (for light bg)</option>
     <option value="#25D366">All green</option>
    </select></div>`;
- c.insertBefore(box,c.querySelector('.btn'));
- function syncWm(){
-  document.getElementById('wmA').textContent=document.getElementById('wmIn1').value;
-  document.getElementById('wmB').textContent=document.getElementById('wmIn2').value;
-  document.getElementById('wmC').textContent=document.getElementById('wmIn3').value;
-  wm.style.fontSize=document.getElementById('wmSize').value+'px';
-  wm.style.color=document.getElementById('wmCol').value;
- }
- row.appendChild(c);
- ['wmIn1','wmIn2','wmIn3','wmSize','wmCol'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',syncWm);
-  document.getElementById(id).addEventListener('change',syncWm);
- });
- syncWm();
+      c.insertBefore(box, c.querySelector('.btn'));
+      function syncWm() {
+        document.getElementById('wmA').textContent = document.getElementById('wmIn1').value;
+        document.getElementById('wmB').textContent = document.getElementById('wmIn2').value;
+        document.getElementById('wmC').textContent = document.getElementById('wmIn3').value;
+        wm.style.fontSize = document.getElementById('wmSize').value + 'px';
+        wm.style.color = document.getElementById('wmCol').value;
+      }
+      row.appendChild(c);
+      ['wmIn1', 'wmIn2', 'wmIn3', 'wmSize', 'wmCol'].forEach(id => {
+        document.getElementById(id).addEventListener('input', syncWm);
+        document.getElementById(id).addEventListener('change', syncWm);
+      });
+      syncWm();
 
- const mk=(html,file)=>{const d=document.createElement('div');d.innerHTML=html;return card(d.firstChild,file);};
- row.appendChild(mk('<div class="tile"><svg viewBox="0 0 24 24" width="76" height="76"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4 3.5V16H6.5A2.5 2.5 0 0 1 4 13.5z" fill="#fff"/></svg></div>','logo-tile-placeholder.png'));
- row.appendChild(mk('<span class="ticks" style="width:40px;height:28px">'+TICKS.replace('<span class="ticks">','').replace('</span>','')+'</span>','ticks-blue.png'));
-}
+      const mk = (html, file) => { const d = document.createElement('div'); d.innerHTML = html; return card(d.firstChild, file); };
+      row.appendChild(mk('<div class="tile"><svg viewBox="0 0 24 24" width="76" height="76"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4 3.5V16H6.5A2.5 2.5 0 0 1 4 13.5z" fill="#fff"/></svg></div>', 'logo-tile-placeholder.png'));
+      row.appendChild(mk('<span class="ticks" style="width:40px;height:28px">' + TICKS.replace('<span class="ticks">', '').replace('</span>', '') + '</span>', 'ticks-blue.png'));
+    }
 
-document.querySelectorAll('#langToggle button').forEach(b=>b.onclick=()=>{
- document.querySelectorAll('#langToggle button').forEach(x=>x.classList.remove('active'));
- b.classList.add('active');renderBubbles(b.dataset.l);
-});
-document.getElementById('bgSize').onchange=renderBackgrounds;
-document.getElementById('bgPat').onchange=renderBackgrounds;
-renderBackgrounds();renderBubbles('en');renderElements();applyGlobals();
-</script>
+    document.querySelectorAll('#langToggle button').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#langToggle button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active'); renderBubbles(b.dataset.l);
+    });
+    document.getElementById('bgSize').onchange = renderBackgrounds;
+    document.getElementById('bgPat').onchange = renderBackgrounds;
+    renderBackgrounds(); renderBubbles('en'); renderElements(); applyGlobals();
+  </script>
+
+  <script>
+    /* =========================================================================
+       Logo grid + editable phone / computer WhatsApp mockups (for ads)
+       Reuses from the first script: TICKS, DOODLE, GRAD, dl(), esc(), mdToHtml()
+       ========================================================================= */
+
+    /* ---- wallpapers derived from the deck doodle ---- */
+    const WALL_DARK = DOODLE.replace("opacity='0.9'", "opacity='0.05'");
+    const WALL_LIGHT = DOODLE.replace("%23E9EDEF", "%23222E35").replace("opacity='0.9'", "opacity='0.06'");
+
+    /* ---- icons ---- */
+    const IC_BACK = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`;
+    const IC_VIDEO = `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11z"/></svg>`;
+    const IC_CALL = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg>`;
+    const IC_DOTS = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>`;
+    const IC_EMOJI = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0" stroke-linecap="round"/></svg>`;
+    const IC_CLIP = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.4 8.4a5 5 0 0 1-7-7L14 5.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.6 1.6 0 0 1-2.3-2.3l7.6-7.6"/></svg>`;
+    const IC_CAM = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg>`;
+    const IC_MIC = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3"/></svg>`;
+    const IC_SEND = `<svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3l18 9-18 9 3.6-9L3 3z"/></svg>`;
+    const IC_SEARCH = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>`;
+    const ROBOT = `<svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="4" r="1.5" fill="#fff"/><rect x="4.5" y="6.5" width="15" height="12" rx="6" fill="#fff"/><circle cx="9.3" cy="12.5" r="1.9" fill="#128C7E"/><circle cx="14.7" cy="12.5" r="1.9" fill="#128C7E"/></svg>`;
+
+    /* ---- logo registry ---- */
+    const LOGO_NAMES = ["whatbizpro inst pic.png", "whatsbizproDoctor.png", "whatsbizproLogo-16.png",
+      "whatsbizproLogo-48.png", "whatsbizproLogo-128.png", "whatsbizproLogoSquare.png", "whitelogo.png"];
+    let LOGO_BASE = "./WhatsBizPro logo/";
+    const logoReg = {};                 // name -> data URL (clean) or nothing (use path)
+    function logoSrc(name) { return logoReg[name] || (LOGO_BASE + encodeURI(name)); }
+    function avatarOpts() {
+      const opts = [["", "Green tile · white robot"]];
+      const set = new Set([...LOGO_NAMES, ...Object.keys(logoReg)]);
+      set.forEach(n => opts.push([n, n]));
+      return opts;
+    }
+
+    /* ---- shared builders ---- */
+    function avatarEl(name) {
+      const a = document.createElement('div'); a.className = 'avatar';
+      if (name) { const im = document.createElement('img'); im.src = logoSrc(name); im.alt = ''; a.appendChild(im); }
+      else { a.style.background = '#25D366'; a.innerHTML = ROBOT; }
+      return a;
+    }
+    function initialsAvatar(name) {
+      const a = document.createElement('div'); a.className = 'avatar'; a.style.background = '#3B4A54';
+      a.innerHTML = `<span style="font-family:var(--display);font-weight:600;color:#E9EDEF;font-size:1rem">${esc((name || '?').trim()[0] || '?').toUpperCase()}</span>`;
+      return a;
+    }
+    function buildBubble(m) {
+      const b = document.createElement('div'); b.className = 'bubble ' + (m.dir === 'out' ? 'out' : 'in');
+      const s = document.createElement('span'); s.className = 'btext'; s.innerHTML = mdToHtml(m.text || '');
+      const meta = document.createElement('span'); meta.className = 'meta';
+      meta.innerHTML = esc(m.time || '') + ' ' + (m.dir === 'out' && m.ticks ? TICKS : '');
+      b.append(s, meta); return b;
+    }
+    function field(label, el) {
+      const f = document.createElement('div'); f.className = 'field grow';
+      const l = document.createElement('label'); l.className = 'tag'; l.textContent = label; f.append(l, el); return f;
+    }
+    function textInput(val, on) {
+      const i = document.createElement('input'); i.type = 'text'; i.value = val;
+      i.addEventListener('input', () => on(i.value)); return i;
+    }
+    function selInput(opts, val, on) {
+      const s = document.createElement('select');
+      opts.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; s.appendChild(o); });
+      s.value = val; s.addEventListener('change', () => on(s.value)); return s;
+    }
+    function stripBold(s) { return (s || '').replace(/\*\*/g, ''); }
+
+    function buildMsgEditor(state, onText, onStruct) {
+      const wrap = document.createElement('div'); wrap.className = 'msg-list';
+      state.msgs.forEach((m, i) => {
+        const row = document.createElement('div'); row.className = 'msg-row';
+        const dir = selInput([['in', '◀ Recibido'], ['out', 'Enviado ▶']], m.dir, v => { m.dir = v; onStruct(); });
+        const txt = document.createElement('input'); txt.type = 'text'; txt.value = m.text; txt.placeholder = 'Mensaje… (**negrita**)';
+        txt.addEventListener('input', () => { m.text = txt.value; onText(); });
+        const tm = document.createElement('input'); tm.type = 'text'; tm.className = 't'; tm.value = m.time;
+        tm.addEventListener('input', () => { m.time = tm.value; onText(); });
+        const cl = document.createElement('label'); cl.className = 'chk';
+        const ck = document.createElement('input'); ck.type = 'checkbox'; ck.checked = !!m.ticks;
+        ck.addEventListener('change', () => { m.ticks = ck.checked; onStruct(); });
+        cl.append(ck, document.createTextNode('✓✓'));
+        const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+        del.onclick = () => { state.msgs.splice(i, 1); onStruct(); };
+        row.append(dir, txt, tm, cl, del); wrap.appendChild(row);
+      });
+      return wrap;
+    }
+
+    /* =================== PHONE =================== */
+    const phone_state = {
+      name: 'WhatsBizPro', stat: 'en línea', time: '9:41', avatar: '', theme: 'dark', bg: 'transparent',
+      msgs: [
+        { dir: 'in', text: 'Hola 👋 ¿Agendan citas por aquí?', time: '9:40', ticks: false },
+        { dir: 'out', text: '¡Sí! Con WhatsBizPro tu agenda vive **dentro de WhatsApp.**', time: '9:40', ticks: true },
+        { dir: 'in', text: '¿Y me recuerda los seguimientos?', time: '9:41', ticks: false },
+        { dir: 'out', text: 'Programa recordatorios y responde con IA. Tú confirmas y envías. 🚀', time: '9:41', ticks: true },
+      ]
+    };
+
+    function buildPhoneNode() {
+      const phone = document.createElement('div'); phone.className = 'phone';
+      const notch = document.createElement('div'); notch.className = 'notch';
+      const screen = document.createElement('div'); screen.className = 'screen';
+      const wa = document.createElement('div'); wa.className = 'wa'; wa.dataset.theme = phone_state.theme;
+      const top = document.createElement('div'); top.className = 'wa-top';
+      const back = document.createElement('span'); back.className = 'ic'; back.innerHTML = IC_BACK;
+      top.append(back, avatarEl(phone_state.avatar));
+      const nm = document.createElement('div');
+      const n1 = document.createElement('div'); n1.className = 'wa-name'; n1.textContent = phone_state.name;
+      const n2 = document.createElement('div'); n2.className = 'wa-stat'; n2.textContent = phone_state.stat;
+      nm.append(n1, n2); top.appendChild(nm);
+      const grow = document.createElement('div'); grow.className = 'grow'; top.appendChild(grow);
+      const ics = document.createElement('div'); ics.className = 'wa-icons'; ics.innerHTML = IC_VIDEO + IC_CALL + IC_DOTS; top.appendChild(ics);
+      const body = document.createElement('div'); body.className = 'wa-body';
+      body.style.backgroundImage = phone_state.theme === 'light' ? WALL_LIGHT : WALL_DARK;
+      body.style.backgroundSize = '330px 330px';
+      phone_state.msgs.forEach(m => body.appendChild(buildBubble(m)));
+      const inp = document.createElement('div'); inp.className = 'wa-input';
+      inp.innerHTML = `<span class="ic">${IC_EMOJI}</span><div class="wa-field">Mensaje</div><span class="ic">${IC_CLIP}</span><span class="ic">${IC_CAM}</span>`;
+      const send = document.createElement('div'); send.className = 'wa-send'; send.innerHTML = IC_MIC; inp.appendChild(send);
+      wa.append(top, body, inp); screen.appendChild(wa); phone.append(notch, screen); return phone;
+    }
+
+    /* =================== DESKTOP =================== */
+    const desk_state = {
+      name: 'Dr. García', stat: 'en línea', avatar: '', theme: 'dark', bg: 'transparent', frame: 'laptop',
+      msgs: [
+        { dir: 'in', text: 'Buenas, ¿tienen consulta esta semana?', time: '10:02', ticks: false },
+        { dir: 'out', text: 'Claro. Jueves 5:00 pm disponible. ¿Le agendo? 🩺', time: '10:03', ticks: true },
+        { dir: 'in', text: 'Perfecto, muchas gracias.', time: '10:03', ticks: false },
+        { dir: 'out', text: 'Listo ✅ Le enviaré un **recordatorio** un día antes.', time: '10:04', ticks: true },
+      ]
+    };
+
+    function sidebarChats() {
+      const last = desk_state.msgs[desk_state.msgs.length - 1] || { text: '', time: '' };
+      return [
+        { name: desk_state.name, snip: (last.dir === 'out' ? '✓✓ ' : '') + stripBold(last.text), time: last.time, active: true, badge: 0 },
+        { name: 'Farmacia Central', snip: 'Pedido listo para recoger', time: '9:12', badge: 2 },
+        { name: 'Laura Méndez', snip: 'Gracias, doctor 🙏', time: '8:47', badge: 0 },
+        { name: 'Recordatorios', snip: 'Cita mañana 10:00 AM', time: 'Ayer', badge: 1 },
+        { name: 'Proveedor insumos', snip: 'Cotización enviada', time: 'Ayer', badge: 0 },
+      ];
+    }
+    function chatRow(c) {
+      const r = document.createElement('div'); r.className = 'chat-row' + (c.active ? ' active' : '');
+      r.appendChild(c.active ? avatarEl(desk_state.avatar) : initialsAvatar(c.name));
+      const meta = document.createElement('div'); meta.className = 'meta2';
+      const nm = document.createElement('div'); nm.className = 'nm2'; nm.textContent = c.name;
+      const sn = document.createElement('div'); sn.className = 'snip'; sn.textContent = c.snip;
+      meta.append(nm, sn);
+      const rt = document.createElement('div'); rt.className = 'rt';
+      rt.innerHTML = `<div class="tm">${esc(c.time)}</div>` + (c.badge ? `<div class="badge">${c.badge}</div>` : '');
+      r.append(meta, rt); return r;
+    }
+    function buildWin() {
+      const win = document.createElement('div'); win.className = 'win' + (desk_state.frame === 'laptop' ? '' : ' plainwin');
+      const side = document.createElement('div'); side.className = 'wa-side';
+      const st = document.createElement('div'); st.className = 'side-top';
+      st.appendChild(avatarEl(desk_state.avatar));
+      st.insertAdjacentHTML('beforeend', `<div class="grow"></div><span class="ic">${IC_DOTS}</span>`);
+      const search = document.createElement('div'); search.className = 'search'; search.textContent = 'Buscar un chat';
+      side.append(st, search);
+      sidebarChats().forEach(c => side.appendChild(chatRow(c)));
+      const main = document.createElement('div'); main.className = 'wa-main';
+      const wa = document.createElement('div'); wa.className = 'wa'; wa.dataset.theme = desk_state.theme;
+      const top = document.createElement('div'); top.className = 'wa-top';
+      top.appendChild(avatarEl(desk_state.avatar));
+      const nm = document.createElement('div');
+      const n1 = document.createElement('div'); n1.className = 'wa-name'; n1.textContent = desk_state.name;
+      const n2 = document.createElement('div'); n2.className = 'wa-stat'; n2.textContent = desk_state.stat;
+      nm.append(n1, n2); top.appendChild(nm);
+      top.insertAdjacentHTML('beforeend', `<div class="grow"></div><div class="wa-icons">${IC_SEARCH}${IC_DOTS}</div>`);
+      const body = document.createElement('div'); body.className = 'wa-body';
+      body.style.backgroundImage = desk_state.theme === 'light' ? WALL_LIGHT : WALL_DARK;
+      body.style.backgroundSize = '360px 360px';
+      desk_state.msgs.forEach(m => body.appendChild(buildBubble(m)));
+      const inp = document.createElement('div'); inp.className = 'wa-input';
+      inp.innerHTML = `<span class="ic">${IC_EMOJI}</span><div class="wa-field">Escribe un mensaje</div><span class="wa-send">${IC_SEND}</span>`;
+      wa.append(top, body, inp); main.appendChild(wa);
+      win.append(side, main); return win;
+    }
+    function buildDeskNode() {
+      if (desk_state.frame === 'laptop') {
+        const lap = document.createElement('div'); lap.className = 'laptop';
+        const win = buildWin(); lap.appendChild(win);
+        const base = document.createElement('div'); base.className = 'laptop-base';
+        base.style.width = '1040px'; base.style.marginLeft = '-58px';
+        lap.appendChild(base); return lap;
+      }
+      return buildWin();
+    }
+
+    /* =================== stage + capture =================== */
+    function applyStage(stageId, state, build) {
+      const stage = document.getElementById(stageId); stage.innerHTML = '';
+      const node = build();
+      if (state.bg === 'transparent') { stage.style.background = 'none'; stage.style.padding = '0'; stage.style.borderRadius = '0'; }
+      else { stage.style.background = state.bg === 'brand' ? GRAD : '#ffffff'; stage.style.padding = '64px'; stage.style.borderRadius = '18px'; }
+      stage.appendChild(node); stage._node = node;
+    }
+    async function dlSafe(node, file, scale, transparent) {
+      try { await dl(node, file, scale, transparent); }
+      catch (e) {
+        alert("No se pudo exportar el PNG.\n\nCausa probable: el logo se carga como archivo local y el navegador bloquea la exportación.\n\nSoluciones:\n• Usa el botón \"Load logo files\" para cargar el logo, o\n• Abre esta página con un servidor local:  python -m http.server\n\nDetalle: " + e);
+      }
+    }
+    function downloadDevice(stageId, state, file, scale) {
+      const stage = document.getElementById(stageId);
+      const node = state.bg === 'transparent' ? stage._node : stage;
+      dlSafe(node, file, scale, state.bg === 'transparent');
+    }
+
+    /* =================== controls =================== */
+    function renderPreviewPhone() { applyStage('phoneStage', phone_state, buildPhoneNode); }
+    function renderPreviewDesk() { applyStage('deskStage', desk_state, buildDeskNode); }
+
+    function renderListPhone() {
+      const ml = document.getElementById('phoneMsgList'); ml.innerHTML = '';
+      ml.appendChild(buildMsgEditor(phone_state, renderPreviewPhone, () => { renderListPhone(); renderPreviewPhone(); }));
+    }
+    function renderListDesk() {
+      const ml = document.getElementById('deskMsgList'); ml.innerHTML = '';
+      ml.appendChild(buildMsgEditor(desk_state, renderPreviewDesk, () => { renderListDesk(); renderPreviewDesk(); }));
+    }
+
+    function buildControlsPhone() {
+      const c = document.getElementById('phoneControls'); c.innerHTML = '';
+      const g1 = document.createElement('div'); g1.className = 'grid2';
+      g1.append(
+        field('Nombre del contacto', textInput(phone_state.name, v => { phone_state.name = v; renderPreviewPhone(); })),
+        field('Estado', textInput(phone_state.stat, v => { phone_state.stat = v; renderPreviewPhone(); })),
+      );
+      const g2 = document.createElement('div'); g2.className = 'grid2';
+      g2.append(
+        field('Avatar (logo)', selInput(avatarOpts(), phone_state.avatar, v => { phone_state.avatar = v; renderPreviewPhone(); })),
+        field('Tema', selInput([['dark', 'WhatsApp oscuro'], ['light', 'WhatsApp claro']], phone_state.theme, v => { phone_state.theme = v; renderPreviewPhone(); })),
+        field('Fondo de exportación', selInput([['transparent', 'Transparente'], ['brand', 'Degradado marca'], ['white', 'Blanco']], phone_state.bg, v => { phone_state.bg = v; renderPreviewPhone(); })),
+      );
+      const lab = document.createElement('label'); lab.className = 'tag'; lab.textContent = 'Mensajes';
+      const ml = document.createElement('div'); ml.id = 'phoneMsgList';
+      const add = document.createElement('button'); add.className = 'btn ghost'; add.textContent = '+ Añadir mensaje';
+      add.onclick = () => { phone_state.msgs.push({ dir: 'out', text: 'Nuevo mensaje', time: phone_state.time, ticks: true }); renderListPhone(); renderPreviewPhone(); };
+      const dr = document.createElement('div'); dr.className = 'btnrow';
+      const db = document.createElement('button'); db.className = 'btn'; db.textContent = 'Download PNG';
+      db.onclick = () => downloadDevice('phoneStage', phone_state, 'whatsbizpro-phone-mockup.png', 3);
+      const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'exporta a 3×';
+      dr.append(db, tag);
+      c.append(g1, g2, lab, ml, add, dr);
+    }
+    function buildControlsDesk() {
+      const c = document.getElementById('deskControls'); c.innerHTML = '';
+      const g1 = document.createElement('div'); g1.className = 'grid2';
+      g1.append(
+        field('Nombre del contacto', textInput(desk_state.name, v => { desk_state.name = v; renderPreviewDesk(); })),
+        field('Estado', textInput(desk_state.stat, v => { desk_state.stat = v; renderPreviewDesk(); })),
+      );
+      const g2 = document.createElement('div'); g2.className = 'grid2';
+      g2.append(
+        field('Avatar (logo)', selInput(avatarOpts(), desk_state.avatar, v => { desk_state.avatar = v; renderPreviewDesk(); })),
+        field('Tema', selInput([['dark', 'WhatsApp oscuro'], ['light', 'WhatsApp claro']], desk_state.theme, v => { desk_state.theme = v; renderPreviewDesk(); })),
+      );
+      const g3 = document.createElement('div'); g3.className = 'grid2';
+      g3.append(
+        field('Marco', selInput([['laptop', 'Laptop'], ['window', 'Solo ventana']], desk_state.frame, v => { desk_state.frame = v; renderPreviewDesk(); })),
+        field('Fondo de exportación', selInput([['transparent', 'Transparente'], ['brand', 'Degradado marca'], ['white', 'Blanco']], desk_state.bg, v => { desk_state.bg = v; renderPreviewDesk(); })),
+      );
+      const lab = document.createElement('label'); lab.className = 'tag'; lab.textContent = 'Mensajes';
+      const ml = document.createElement('div'); ml.id = 'deskMsgList';
+      const add = document.createElement('button'); add.className = 'btn ghost'; add.textContent = '+ Añadir mensaje';
+      add.onclick = () => { desk_state.msgs.push({ dir: 'out', text: 'Nuevo mensaje', time: '10:05', ticks: true }); renderListDesk(); renderPreviewDesk(); };
+      const dr = document.createElement('div'); dr.className = 'btnrow';
+      const db = document.createElement('button'); db.className = 'btn'; db.textContent = 'Download PNG';
+      db.onclick = () => downloadDevice('deskStage', desk_state, 'whatsbizpro-web-mockup.png', 2);
+      const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'exporta a 2×';
+      dr.append(db, tag);
+      c.append(g1, g2, g3, lab, ml, add, dr);
+    }
+
+    function rebuildAll() {
+      buildControlsPhone(); renderListPhone(); renderPreviewPhone();
+      buildControlsDesk(); renderListDesk(); renderPreviewDesk();
+    }
+
+    /* =================== logos =================== */
+    function renderLogos() {
+      const grid = document.getElementById('logoGrid'); grid.innerHTML = '';
+      const set = new Set([...LOGO_NAMES, ...Object.keys(logoReg)]);
+      set.forEach(name => {
+        const card = document.createElement('div'); card.className = 'logo-card';
+        const thumb = document.createElement('div'); thumb.className = 'thumb';
+        const img = document.createElement('img'); img.alt = name; img.src = logoSrc(name);
+        img.onerror = () => { thumb.innerHTML = '<div class="miss">no encontrado<br>ajusta la ruta o<br>carga el archivo</div>'; };
+        thumb.appendChild(img);
+        const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = name;
+        const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '.7rem'; b.textContent = 'Usar de avatar';
+        b.onclick = () => { phone_state.avatar = name; desk_state.avatar = name; rebuildAll(); };
+        card.append(thumb, nm, b); grid.appendChild(card);
+      });
+    }
+    document.getElementById('logoReload').onclick = () => {
+      let v = document.getElementById('logoBase').value.trim() || './';
+      if (!/[\/]$/.test(v)) v += '/'; LOGO_BASE = v;
+      renderLogos(); renderPreviewPhone(); renderPreviewDesk();
+    };
+    document.getElementById('logoFiles').onchange = e => {
+      const files = [...e.target.files]; if (!files.length) return; let left = files.length;
+      files.forEach(f => {
+        const r = new FileReader();
+        r.onload = () => { logoReg[f.name] = r.result; if (!--left) { renderLogos(); rebuildAll(); } };
+        r.readAsDataURL(f);
+      });
+      e.target.value = '';
+    };
+
+    /* =================== init =================== */
+    renderLogos();
+    rebuildAll();
+  </script>
+
 </body>
+
 </html>

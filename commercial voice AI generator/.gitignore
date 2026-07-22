@@ -1,0 +1,22 @@
+# Claves y secretos
+.env
+*.key
+
+# Audio generado
+*.wav
+*.mp3
+
+# Entorno virtual
+venv/
+.venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Phone Mockup — editable chat</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  /* tool chrome */
+  --ui-bg:#0b1416;--ui-panel:#141f24;--ui-line:rgba(134,150,160,.18);
+  --ui-text:#E9EDEF;--ui-muted:#8696A0;--accent:#00A884;
+  /* WhatsApp DARK (default) */
+  --statusbar:#1F2C34;--header:#1F2C34;--headtext:#E9EDEF;--headicon:#E4E7E9;--sub:#8696A0;
+  --wall:#0B141A;--walltint:#0B141A;
+  --in:#202C33;--in-text:#E9EDEF;--out:#005C4B;--out-text:#E9EDEF;
+  --time:#8696A0;--time-out:rgba(233,237,239,.6);--tick-read:#53BDEB;
+  --input:transparent;--pill:#2A3942;--pilltext:#8696A0;--fab:#00A884;--cicon:#8696A0;
+  --chip:rgba(28,44,53,.92);--chip-text:#8696A0;--enc-bg:rgba(28,44,53,.9);--enc-text:#e6c15a;
+  --wafont:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+[data-theme="light"]{
+  --statusbar:#017561;--header:#008069;--headtext:#FFFFFF;--headicon:#FFFFFF;--sub:rgba(255,255,255,.88);
+  --wall:#EFE7DE;--walltint:#0b141a;
+  --in:#FFFFFF;--in-text:#111B21;--out:#D9FDD3;--out-text:#111B21;
+  --time:#667781;--time-out:#667781;--tick-read:#53BDEB;
+  --input:transparent;--pill:#FFFFFF;--pilltext:#8E9AA0;--fab:#00A884;--cicon:#54656F;
+  --chip:#FFFFFF;--chip-text:#54656F;--enc-bg:#FDF6CB;--enc-text:#8a6d3b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ui-bg);color:var(--ui-text);
+  font-family:var(--wafont);padding:26px 20px 90px;line-height:1.5}
+h1{font-size:1.4rem;font-weight:700}
+h1 b{color:var(--accent)}
+.lead{color:var(--ui-muted);font-size:.88rem;max-width:760px;margin:6px 0 24px}
+.lead b{color:var(--ui-text)}
+.wrap{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+.controls{flex:1 1 340px;min-width:300px;max-width:440px;display:flex;flex-direction:column;gap:16px}
+.sec{background:var(--ui-panel);border:1px solid var(--ui-line);border-radius:16px;padding:16px}
+.sec h2{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ui-muted);margin-bottom:12px;font-weight:600}
+.grid{display:flex;gap:10px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;flex:1 1 130px}
+.field.full{flex-basis:100%}
+label.t{font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ui-muted)}
+input[type=text],select,textarea{font-family:var(--wafont);background:#0b1416;color:var(--ui-text);
+  border:1px solid var(--ui-line);border-radius:10px;padding:9px 12px;font-size:.85rem;width:100%}
+select{cursor:pointer}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.btn{font-weight:600;font-size:.84rem;color:#04120c;background:var(--accent);border:none;
+  border-radius:999px;padding:11px 20px;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:none;color:var(--ui-muted);border:1px solid var(--ui-line)}
+.btn.ghost:hover{color:var(--ui-text);border-color:var(--ui-muted)}
+.chk{display:flex;align-items:center;gap:7px;color:var(--ui-muted);font-size:.8rem;cursor:pointer;user-select:none}
+.chk input{width:15px;height:15px;accent-color:var(--accent)}
+.hint{font-size:.72rem;color:var(--ui-muted);margin-top:4px}
+
+/* message editor rows */
+.msg-list{display:flex;flex-direction:column;gap:8px}
+.msg-row{display:flex;gap:6px;align-items:center;background:#0b1416;border:1px solid var(--ui-line);border-radius:12px;padding:6px}
+.msg-row select{width:auto;padding:7px 8px;font-size:.74rem;flex:0 0 auto}
+.msg-row .who{flex:0 0 84px}
+.msg-row input.tx{flex:1;min-width:56px;padding:7px 9px;font-size:.78rem}
+.msg-row input.tm{flex:0 0 58px;padding:7px 6px;font-size:.78rem;text-align:center}
+.msg-row .tk{flex:0 0 96px}
+.msg-row .del{flex:0 0 auto;background:none;border:1px solid var(--ui-line);color:var(--ui-muted);
+  border-radius:9px;cursor:pointer;padding:7px 10px;font-weight:600}
+.msg-row .del:hover{color:#ff6b6b;border-color:rgba(255,107,107,.5)}
+.dlrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.dlrow .tag{font-size:.72rem;color:var(--ui-muted)}
+
+/* ============ preview stage ============ */
+.previewcol{flex:0 0 auto}
+.stage{display:inline-block;padding:0;border-radius:20px}
+
+/* device */
+.device{background:#04070a;border-radius:52px;padding:12px;box-shadow:0 40px 90px rgba(0,0,0,.55)}
+.device .screen{border-radius:41px}
+.screen{width:372px;height:806px;overflow:hidden;position:relative;display:flex;flex-direction:column;
+  background:var(--wall);border-radius:8px}
+
+/* status bar */
+.statusbar{height:38px;flex:0 0 auto;background:var(--statusbar);color:var(--headtext);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 26px;font-size:14px;font-weight:600}
+.statusbar .sb-icons{display:flex;align-items:center;gap:7px}
+.statusbar svg{display:block;fill:var(--headtext)}
+
+/* header */
+.wa-header{flex:0 0 auto;background:var(--header);display:flex;align-items:center;gap:6px;
+  padding:7px 12px 8px 6px}
+.hicon{color:var(--headicon);display:flex;align-items:center;justify-content:center;padding:4px}
+.hicon svg{display:block}
+.havatar{width:40px;height:40px;border-radius:50%;overflow:hidden;background:#6b7c85;
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin:0 2px}
+.havatar img{width:100%;height:100%;object-fit:cover}
+.havatar .ini{font-weight:600;color:#fff;font-size:1.05rem}
+.hmeta{display:flex;flex-direction:column;justify-content:center;min-width:0;margin-left:2px}
+.hname{color:var(--headtext);font-size:16.5px;font-weight:500;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hsub{color:var(--sub);font-size:12.5px;line-height:1.2}
+.hgrow{flex:1}
+.wa-header .hicon.big svg{width:22px;height:22px}
+
+/* chat area */
+.wa-chat{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:2px;
+  padding:10px 7% 10px 16px;background-color:var(--wall);background-repeat:repeat;position:relative}
+.wa-chat::before{content:"";position:absolute;inset:0;background:var(--walltint);opacity:.90;pointer-events:none}
+.wa-chat > *{position:relative;z-index:1}
+.daychip,.enc{align-self:center;border-radius:8px;padding:6px 13px;font-size:12.5px;
+  box-shadow:0 1px 1px rgba(11,20,26,.12);margin:6px 0}
+.daychip{background:var(--chip);color:var(--chip-text);text-transform:none}
+.enc{background:var(--enc-bg);color:var(--enc-text);text-align:center;max-width:88%;line-height:1.45;
+  font-size:12px;display:flex;gap:6px;align-items:center}
+.enc svg{flex:0 0 auto;fill:var(--enc-text)}
+
+/* bubbles */
+.msg{position:relative;max-width:80%;border-radius:7.5px;padding:6px 8px 8px 9px;
+  font-size:14.2px;line-height:19px;background:var(--in);color:var(--in-text);
+  box-shadow:0 1px .5px rgba(11,20,26,.13);margin-top:2px;word-wrap:break-word;overflow-wrap:anywhere}
+.msg.in{align-self:flex-start}
+.msg.out{align-self:flex-end;background:var(--out);color:var(--out-text)}
+.msg.grp{margin-top:10px}
+.msg.tail.in{border-top-left-radius:0}
+.msg.tail.out{border-top-right-radius:0}
+.msg b{font-weight:700}.msg i{font-style:italic}.msg s{text-decoration:line-through}
+.msg code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:rgba(0,0,0,.15);padding:0 3px;border-radius:3px}
+.tailv{position:absolute;top:0;width:8px;height:13px;line-height:0}
+.msg.in .tailv{left:-8px}.msg.out .tailv{right:-8px}
+.msg.in .tailv path{fill:var(--in)}.msg.out .tailv path{fill:var(--out)}
+.txt{white-space:pre-wrap}
+.pad{display:inline-block;width:0;height:1px}
+.meta{position:absolute;right:8px;bottom:5px;display:flex;align-items:center;gap:3px;
+  font-size:11px;color:var(--time);white-space:nowrap}
+.msg.out .meta{color:var(--time-out)}
+.meta .ck{display:inline-block;line-height:0}
+.meta .ck svg{display:block}
+
+/* compose */
+.wa-compose{flex:0 0 auto;display:flex;align-items:flex-end;gap:8px;padding:7px 10px 9px;background:var(--input)}
+.pill{flex:1;background:var(--pill);border-radius:24px;display:flex;align-items:center;gap:9px;padding:9px 12px;min-height:46px}
+.pill .cicon{color:var(--cicon);display:flex}
+.pill .ph{color:var(--pilltext);font-size:15px;flex:1}
+.fab{width:46px;height:46px;border-radius:50%;background:var(--fab);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+
+/* home indicator */
+.homebar{flex:0 0 auto;height:22px;display:flex;align-items:center;justify-content:center;background:var(--input)}
+.homebar span{width:132px;height:5px;border-radius:3px;background:var(--headtext);opacity:.5}
+[data-theme="light"] .homebar span{background:#111;opacity:.3}
+</style>
+</head>
+<body>
+<h1>WhatsApp <b>phone</b> mockup</h1>
+<p class="lead">A pixel-faithful WhatsApp chat screen. Edit the header and messages on the left, then
+<b>Download PNG</b> for your ads. Message formatting uses WhatsApp's own syntax:
+<b>*bold*</b>, <b>_italic_</b>, <b>~strike~</b>. Upload an avatar to guarantee a clean export.</p>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="sec">
+      <h2>Chat header</h2>
+      <div class="grid">
+        <div class="field"><label class="t">Contact name</label><input type="text" id="cName" value="WhatsBizPro"></div>
+        <div class="field"><label class="t">Status</label><input type="text" id="cStatus" value="en línea"></div>
+      </div>
+      <div class="grid" style="margin-top:10px">
+        <div class="field"><label class="t">Avatar</label>
+          <select id="cAvType"><option value="robot">Green robot</option><option value="initial">Initial letter</option><option value="image">Uploaded image</option></select></div>
+        <div class="field"><label class="t">Upload avatar</label>
+          <label class="btn ghost" style="text-align:center;cursor:pointer;padding:9px 12px">Choose file…<input type="file" id="cAvFile" accept="image/*" hidden></label></div>
+      </div>
+      <div class="grid" style="margin-top:10px">
+        <div class="field"><label class="t">Status-bar time</label><input type="text" id="cBarTime" value="9:41"></div>
+        <div class="field"><label class="t">Theme</label>
+          <select id="cTheme"><option value="dark">WhatsApp dark</option><option value="light">WhatsApp light (green)</option></select></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Conversation</h2>
+      <div class="grid" style="margin-bottom:12px">
+        <div class="field"><label class="t">Date chip</label><input type="text" id="cDay" value="HOY"></div>
+        <label class="chk" style="align-self:flex-end;flex:1 1 130px"><input type="checkbox" id="cEnc" checked> Encryption notice</label>
+      </div>
+      <div class="msg-list" id="msgList"></div>
+      <button class="btn ghost" id="addMsg" style="margin-top:10px">+ Add message</button>
+      <p class="hint">Tick states apply to sent messages only: — / ✓ sent / ✓✓ delivered / ✓✓ read (blue).</p>
+    </div>
+
+    <div class="sec">
+      <div class="field full" style="margin-top:10px"><label class="t">Chat wallpaper</label>
+        <label class="btn ghost" style="text-align:center;cursor:pointer;padding:9px 12px">Upload wallpaper…<input type="file" id="cBgFile" accept="image/*" hidden></label></div>
+      <h2>Export</h2>
+      <div class="grid">
+        <div class="field"><label class="t">Frame</label>
+          <select id="cFrame"><option value="device">Phone device</option><option value="screen">Screen only</option></select></div>
+        <div class="field"><label class="t">Background</label>
+          <select id="cBg"><option value="transparent">Transparent</option><option value="dark">Dark</option><option value="white">White</option></select></div>
+      </div>
+      <div class="dlrow" style="margin-top:14px">
+        <button class="btn" id="dlBtn">Download PNG</button>
+        <span class="tag">exports at 3×</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="previewcol">
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+
+<script>
+/* ---------------- helpers ---------------- */
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function waFormat(s){
+  s=esc(s);
+  s=s.replace(/```([\s\S]+?)```/g,'<code>$1</code>');
+  s=s.replace(/(^|[\s(])\*(\S(?:.*?\S)?)\*(?=[\s).,!?]|$)/g,'$1<b>$2</b>');
+  s=s.replace(/(^|[\s(])_(\S(?:.*?\S)?)_(?=[\s).,!?]|$)/g,'$1<i>$2</i>');
+  s=s.replace(/(^|[\s(])~(\S(?:.*?\S)?)~(?=[\s).,!?]|$)/g,'$1<s>$2</s>');
+  s=s.replace(/\n/g,'<br>');
+  return s;
+}
+
+/* ---------------- icons ---------------- */
+const IC_BACK=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>`;
+const IC_VIDEO=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11z"/></svg>`;
+const IC_CALL=`<svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg>`;
+const IC_KEBAB=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
+const IC_EMOJI=`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="8.8" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.2" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.3 14.2a4.2 4.2 0 0 0 7.4 0" stroke-linecap="round"/></svg>`;
+const IC_CLIP=`<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1L14 4.3a3.35 3.35 0 0 1 4.7 4.7l-8.6 8.6a1.65 1.65 0 0 1-2.4-2.3l7.8-7.8"/></svg>`;
+const IC_CAM=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h3l1.4-2h7.2L18 8h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>`;
+const IC_MIC=`<svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 1 0-7 0v5.5A3.5 3.5 0 0 0 12 15z"/><path d="M18 11.5a6 6 0 0 1-12 0M12 17.5V21" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>`;
+const IC_LOCK=`<svg width="12" height="12" viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-5 8a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zm2.5-8h-5V7a2.5 2.5 0 0 1 5 0z"/></svg>`;
+const SB_SIGNAL=`<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>`;
+const SB_WIFI=`<svg width="18" height="13" viewBox="0 0 18 13"><path d="M9 12.2l2.2-2.7a3.4 3.4 0 0 0-4.4 0zM9 3C5.7 3 2.7 4.3.6 6.5l1.8 2.2a9 9 0 0 1 13.2 0l1.8-2.2A12.7 12.7 0 0 0 9 3z"/></svg>`;
+const SB_BATT=`<svg width="26" height="13" viewBox="0 0 26 13"><rect x="0.6" y="0.6" width="21" height="11.8" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.2" y="2.2" width="16.5" height="8.6" rx="1.6"/><rect x="23" y="4" width="2" height="5" rx="1"/></svg>`;
+
+/* ---------------- tail shapes (authentic WhatsApp) ---------------- */
+const TAIL_IN=`<svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M2.812 1H8v11.193L1.533 3.568C.474 2.156 1.042 1 2.812 1z"/><path d="M2.812 0H8v11.193L1.533 2.568C.474 1.156 1.042 0 2.812 0z"/></svg>`;
+const TAIL_OUT=`<svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"/><path d="M5.188 0H0v11.193L6.467 2.568C7.526 1.156 6.958 0 5.188 0z"/></svg>`;
+
+/* ---------------- tick glyphs ---------------- */
+function ticks(state){
+  if(state==='none'||!state) return '';
+  const col = state==='read' ? 'var(--tick-read)' : 'currentColor';
+  if(state==='sent'){
+    return `<span class="ck"><svg width="16" height="11" viewBox="0 0 16 11" fill="${col}"><path d="M11.07.65l-.55-.42a.28.28 0 0 0-.4.06L5.35 6.46 3.6 4.8a.28.28 0 0 0-.4 0l-.5.5a.28.28 0 0 0 0 .4l2.4 2.32c.13.12.34.1.44-.04L11.13 1.05a.28.28 0 0 0-.06-.4z"/></svg></span>`;
+  }
+  return `<span class="ck"><svg width="16" height="11" viewBox="0 0 16 11" fill="${col}"><path d="M11.07.65l-.55-.42a.28.28 0 0 0-.4.06L5.35 6.46 3.6 4.8a.28.28 0 0 0-.4 0l-.5.5a.28.28 0 0 0 0 .4l2.4 2.32c.13.12.34.1.44-.04L11.13 1.05a.28.28 0 0 0-.06-.4z"/><path d="M15.07.65l-.55-.42a.28.28 0 0 0-.4.06L9.35 6.46l-.7-.66-.9 1.17.95.92c.13.12.34.1.44-.04L15.13 1.05a.28.28 0 0 0-.06-.4z"/></svg></span>`;
+}
+
+/* ---------------- state ---------------- */
+const S={
+  name:'WhatsBizPro', status:'en línea', barTime:'9:41',
+  avType:'robot', avImg:null, bgImg:null, theme:'dark', day:'HOY', enc:true,
+  frame:'device', bg:'transparent',
+  msgs:[
+    {dir:'in',  text:'Hola 👋 ¿Esto funciona *dentro* de WhatsApp?', time:'9:40', tick:'read'},
+    {dir:'out', text:'Sí. CRM, IA y recordatorios, sin salir de aquí.', time:'9:40', tick:'read'},
+    {dir:'out', text:'Tú revisas y envías. La IA solo te ayuda. 🚀', time:'9:40', tick:'read'},
+    {dir:'in',  text:'¿Y me recuerda los seguimientos?', time:'9:41', tick:'read'},
+    {dir:'out', text:'Programa recordatorios por días o meses. ✅', time:'9:41', tick:'delivered'},
+  ]
+};
+
+/* ---------------- avatar ---------------- */
+function avatarNode(){
+  const a=document.createElement('div');a.className='havatar';
+  if(S.avType==='image' && S.avImg){
+    const im=document.createElement('img');im.src=S.avImg;a.appendChild(im);
+  } else if(S.avType==='initial'){
+    a.style.background='#128C7E';
+    const sp=document.createElement('span');sp.className='ini';sp.textContent=(S.name.trim()[0]||'?').toUpperCase();a.appendChild(sp);
+  } else {
+    a.style.background='#25D366';
+    a.innerHTML=`<svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="4" r="1.5" fill="#fff"/><rect x="4.5" y="6.5" width="15" height="12" rx="6" fill="#fff"/><circle cx="9.3" cy="12.5" r="1.9" fill="#128C7E"/><circle cx="14.7" cy="12.5" r="1.9" fill="#128C7E"/></svg>`;
+  }
+  return a;
+}
+
+/* ---------------- build screen ---------------- */
+function buildScreen(){
+  const screen=document.createElement('div');screen.className='screen';screen.dataset.theme=S.theme;
+  // status bar
+  const sb=document.createElement('div');sb.className='statusbar';
+  sb.innerHTML=`<span class="sb-time">${esc(S.barTime)}</span><span class="sb-icons">${SB_SIGNAL}${SB_WIFI}${SB_BATT}</span>`;
+  // header
+  const hd=document.createElement('div');hd.className='wa-header';
+  const back=document.createElement('span');back.className='hicon';back.innerHTML=IC_BACK;
+  hd.append(back, avatarNode());
+  const hm=document.createElement('div');hm.className='hmeta';
+  const nm=document.createElement('div');nm.className='hname';nm.textContent=S.name;
+  const su=document.createElement('div');su.className='hsub';su.textContent=S.status;
+  hm.append(nm,su);hd.appendChild(hm);
+  const gr=document.createElement('div');gr.className='hgrow';hd.appendChild(gr);
+  ['video','call','kebab'].forEach((k,i)=>{const s=document.createElement('span');s.className='hicon big';
+    s.innerHTML=k==='video'?IC_VIDEO:k==='call'?IC_CALL:IC_KEBAB;hd.appendChild(s);});
+  // chat
+  const chat=document.createElement('div');chat.className='wa-chat';
+  chat.style.backgroundImage = S.bgImg ? `url("${S.bgImg}")` : 'url("whatsapp background.png")';
+  chat.style.backgroundSize='cover';
+  chat.style.backgroundPosition='center';
+  const day=document.createElement('div');day.className='daychip';day.textContent=S.day;chat.appendChild(day);
+  if(S.enc){const e=document.createElement('div');e.className='enc';
+    e.innerHTML=`${IC_LOCK}<span>Los mensajes y las llamadas están cifrados de extremo a extremo.</span>`;chat.appendChild(e);}
+  let prev=null;
+  S.msgs.forEach(m=>{
+    const tail = !prev || prev.dir!==m.dir;
+    chat.appendChild(bubble(m,tail,tail&&prev!==null));
+    prev=m;
+  });
+  // compose
+  const cp=document.createElement('div');cp.className='wa-compose';
+  const pill=document.createElement('div');pill.className='pill';
+  pill.innerHTML=`<span class="cicon">${IC_EMOJI}</span><span class="ph">Mensaje</span><span class="cicon">${IC_CLIP}</span><span class="cicon">${IC_CAM}</span>`;
+  const fab=document.createElement('div');fab.className='fab';fab.innerHTML=IC_MIC;
+  cp.append(pill,fab);
+  // home indicator
+  const home=document.createElement('div');home.className='homebar';home.innerHTML='<span></span>';
+  screen.append(sb,hd,chat,cp,home);
+  return screen;
+}
+function bubble(m,tail,newgroup){
+  const b=document.createElement('div');
+  b.className='msg '+(m.dir==='out'?'out':'in')+(tail?' tail':'')+(newgroup?' grp':'');
+  if(tail){const t=document.createElement('span');t.className='tailv';t.innerHTML=(m.dir==='out'?TAIL_OUT:TAIL_IN);b.appendChild(t);}
+  const tx=document.createElement('span');tx.className='txt';tx.innerHTML=waFormat(m.text);
+  const pad=document.createElement('span');pad.className='pad';tx.appendChild(pad);
+  const meta=document.createElement('span');meta.className='meta';
+  meta.innerHTML=`<span class="tm">${esc(m.time||'')}</span>`+(m.dir==='out'?ticks(m.tick):'');
+  b.append(tx,meta);
+  return b;
+}
+function WALL(theme){
+  const stroke = theme==='light' ? '%23c9b8a3' : '%23classNONE';
+  // faint doodle: light strokes on dark, darker strokes on beige
+  const col = theme==='light' ? '%238a7a68' : '%23ced9de';
+  const op  = theme==='light' ? '0.12' : '0.05';
+  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='${col}' stroke-width='1.5' opacity='${op}'%3E%3Cpath d='M34 46a16 16 0 1 1 7 13l-11 3 4-9a16 16 0 0 1 0-7z'/%3E%3Ccircle cx='162' cy='34' r='12'/%3E%3Cpath d='M154 34l6 6 10-11'/%3E%3Crect x='232' y='68' width='30' height='21' rx='4'/%3E%3Cpath d='M232 73l15 9 15-9'/%3E%3Cpath d='M70 162h34M70 171h23M70 180h30'/%3E%3Crect x='60' y='150' width='53' height='42' rx='7'/%3E%3Cpath d='M196 162l12 26 7-14 14-5z'/%3E%3Cpath d='M46 244c0-9 7-16 16-16s16 7 16 16M62 228v-9'/%3E%3Ccircle cx='242' cy='232' r='14'/%3E%3Cpath d='M242 223v9l7 5'/%3E%3Cpath d='M138 254l9-9 9 9-9 9z'/%3E%3C/g%3E%3C/svg%3E")`;
+}
+
+/* ---------------- preview + measurement ---------------- */
+function renderPreview(){
+  const stage=document.getElementById('stage');
+  document.documentElement.setAttribute('data-theme',S.theme);
+  stage.innerHTML='';
+  const screen=buildScreen();
+  let node=screen;
+  if(S.frame==='device'){const d=document.createElement('div');d.className='device';d.appendChild(screen);node=d;}
+  if(S.bg==='transparent'){stage.style.background='none';stage.style.padding='0';}
+  else{stage.style.background=S.bg==='white'?'#ffffff':'#0B141A';stage.style.padding='48px';}
+  stage.appendChild(node);
+  stage._node=node;
+  // reserve inline space so the timestamp never overlaps text (WhatsApp behaviour)
+  screen.querySelectorAll('.msg').forEach(b=>{
+    const meta=b.querySelector('.meta'), pad=b.querySelector('.pad');
+    if(meta&&pad){const w=meta.offsetWidth; pad.style.width=(w?w+6:0)+'px';}
+  });
+}
+
+/* ---------------- message editor ---------------- */
+function renderList(){
+  const list=document.getElementById('msgList');list.innerHTML='';
+  S.msgs.forEach((m,i)=>{
+    const row=document.createElement('div');row.className='msg-row';
+    const who=document.createElement('select');who.className='who';
+    who.innerHTML='<option value="in">◀ Recibido</option><option value="out">Enviado ▶</option>';
+    who.value=m.dir;who.onchange=()=>{m.dir=who.value;renderList();renderPreview();};
+    const tx=document.createElement('input');tx.type='text';tx.className='tx';tx.value=m.text;
+    tx.placeholder='Mensaje… (*negrita* _cursiva_)';
+    tx.oninput=()=>{m.text=tx.value;renderPreview();};
+    const tm=document.createElement('input');tm.type='text';tm.className='tm';tm.value=m.time;
+    tm.oninput=()=>{m.time=tm.value;renderPreview();};
+    const tk=document.createElement('select');tk.className='tk';
+    tk.innerHTML='<option value="none">—</option><option value="sent">✓ Enviado</option><option value="delivered">✓✓ Entregado</option><option value="read">✓✓ Leído</option>';
+    tk.value=m.tick||'none';tk.disabled=(m.dir==='in');
+    tk.onchange=()=>{m.tick=tk.value;renderPreview();};
+    const del=document.createElement('button');del.className='del';del.textContent='✕';
+    del.onclick=()=>{S.msgs.splice(i,1);renderList();renderPreview();};
+    row.append(who,tx,tm,tk,del);list.appendChild(row);
+  });
+}
+
+/* ---------------- download ---------------- */
+async function download(){
+  const stage=document.getElementById('stage');
+  const node=S.bg==='transparent'?stage._node:stage;
+  const prevBlur=document.activeElement;if(prevBlur&&prevBlur.blur)prevBlur.blur();
+  try{
+    const canvas=await html2canvas(node,{scale:3,backgroundColor:S.bg==='transparent'?null:(S.bg==='white'?'#ffffff':'#0B141A'),useCORS:true});
+    const a=document.createElement('a');a.download='whatsapp-mockup.png';a.href=canvas.toDataURL('image/png');a.click();
+  }catch(e){
+    alert("No se pudo exportar el PNG.\nSi usas una imagen de avatar, súbela con \"Choose file\" (no por URL).\n\nDetalle: "+e);
+  }
+}
+
+/* ---------------- wiring ---------------- */
+function bind(id,ev,fn){document.getElementById(id).addEventListener(ev,fn);}
+bind('cBgFile','change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.bgImg=r.result;renderPreview();};r.readAsDataURL(f);});
+bind('cName','input',e=>{S.name=e.target.value;renderPreview();});
+bind('cStatus','input',e=>{S.status=e.target.value;renderPreview();});
+bind('cBarTime','input',e=>{S.barTime=e.target.value;renderPreview();});
+bind('cAvType','change',e=>{S.avType=e.target.value;renderPreview();});
+bind('cAvFile','change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{S.avImg=r.result;S.avType='image';document.getElementById('cAvType').value='image';renderPreview();};r.readAsDataURL(f);});
+bind('cTheme','change',e=>{S.theme=e.target.value;renderPreview();});
+bind('cDay','input',e=>{S.day=e.target.value;renderPreview();});
+bind('cEnc','change',e=>{S.enc=e.target.checked;renderPreview();});
+bind('cFrame','change',e=>{S.frame=e.target.value;renderPreview();});
+bind('cBg','change',e=>{S.bg=e.target.value;renderPreview();});
+bind('addMsg','click',()=>{S.msgs.push({dir:'out',text:'Nuevo mensaje',time:S.barTime,tick:'read'});renderList();renderPreview();});
+bind('dlBtn','click',download);
+
+renderList();
+renderPreview();
+</script>
+</body>
+</html>
