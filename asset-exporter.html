@@ -859,6 +859,9 @@
       background: #fff;
       color: #8696A0
     }
+      .bg-note{color:#8696A0;font-size:.8rem;max-width:660px;margin:2px 0 12px;line-height:1.5}
+    .bg-note b{color:#E9EDEF}
+    .bgov{position:absolute;inset:0;pointer-events:none;background-repeat:repeat}
   </style>
 </head>
 
@@ -937,7 +940,9 @@
       <option value="on">With doodle</option>
       <option value="off">Plain gradient</option>
     </select>
+
   </div>
+  <p class="bg-note">Two extra cards sit <b>faintly over the brand gradient</b>: the <b>WhatsApp wallpaper</b> (your <b>whatsapp background.png</b>) and a custom <b>WhatsBizPro doodle</b> pattern. To download the WhatsApp one cleanly, click <b>Load whatsapp background.png</b> and pick the file (or run <b>python -m http.server</b>). The doodle card always exports.</p>
   <div class="row" id="bgRow"></div>
 
   <h2>Preset bubbles — click the text to edit</h2>
@@ -971,7 +976,9 @@
   </div>
   <div class="logo-grid" id="logoGrid"></div>
 
-  <h2>Phone mockup &mdash; editable WhatsApp chat</h2>
+  <h2 style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">Phone mockup &mdash; editable WhatsApp chat
+    <a class="btn" href="whatsapp-phone-mockup.html" target="_blank" rel="noopener"
+       style="text-decoration:none;font-size:.72rem;padding:8px 15px">Open realistic version &rarr;</a></h2>
   <p class="lead">Edit the header, pick a logo as the avatar, add or change messages, then download a
     transparent PNG (or on a brand background) to drop into your ad.</p>
   <div class="mock-wrap">
@@ -981,7 +988,9 @@
     </div>
   </div>
 
-  <h2>Computer mockup &mdash; WhatsApp Web</h2>
+  <h2 style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">Computer mockup &mdash; WhatsApp Web
+    <a class="btn" href="whatsapp-web-mockup.html" target="_blank" rel="noopener"
+       style="text-decoration:none;font-size:.72rem;padding:8px 15px">Open realistic version &rarr;</a></h2>
   <div class="mock-wrap">
     <div class="mock-controls" id="deskControls"></div>
     <div style="max-width:100%;overflow:auto">
@@ -1037,7 +1046,10 @@
       const canvas = await html2canvas(node, { scale: scale || 2, backgroundColor: transparent ? null : '#0B141A', useCORS: true });
       const a = document.createElement('a');
       a.download = filename.replace(/\.png$/i, '') + '.png';
-      a.href = canvas.toDataURL('image/png'); a.click();
+      await new Promise(res => canvas.toBlob(b => {
+        a.href = URL.createObjectURL(b); a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000); res();
+      }, 'image/png'));
     }
     function card(previewNode, filename, opts) {
       const c = document.createElement('div'); c.className = 'card';
@@ -1097,25 +1109,75 @@
     document.getElementById('gWidth').addEventListener('input', applyGlobals);
 
     /* ---------- backgrounds ---------- */
-    function renderBackgrounds() {
-      const row = document.getElementById('bgRow'); row.innerHTML = '';
-      const [w, h] = document.getElementById('bgSize').value.split('x').map(Number);
-      const pat = document.getElementById('bgPat').value === 'on';
+    const WA_BG = "data:image/png;base64,PASTE_THE_WHOLE_LINE_FROM_wa_bg_line.txt";
+    let waBgData = WA_BG; // baked-in wallpaper — no file picking needed
+    const WABIZ_DOODLE = (function () {
+      const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><g fill='none' stroke='#bfead2' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'>"
+        + "<rect x='24' y='30' width='60' height='44' rx='11'/><path d='M40 78l-2 10 12-8'/>"
+        + "<path d='M120 44l7 7 14-15M138 44l7 7 14-15'/>"
+        + "<path d='M214 28c14 5 22 17 20 34-9 3-17 2-24-3z M214 28c-6 13-5 24 2 33'/><path d='M208 62l-9 11'/>"
+        + "<circle cx='60' cy='150' r='9'/><path d='M60 159v9a26 26 0 0 0 52 0v-7'/><circle cx='112' cy='151' r='6'/>"
+        + "<rect x='150' y='128' width='46' height='40' rx='6'/><path d='M150 141h46M162 122v8M184 122v8'/>"
+        + "<rect x='232' y='129' width='40' height='30' rx='13'/><circle cx='232' cy='121' r='2.4'/><circle cx='246' cy='144' r='3.6' fill='#bfead2' stroke='none'/><circle cx='258' cy='144' r='3.6' fill='#bfead2' stroke='none'/>"
+        + "<path d='M44 250c-9 0-16-7-16-16s7-16 16-16 16 7 16 16M36 234v-8M60 250H26'/>"
+        + "<path d='M150 236c-9-9-24-2-24 10 0 10 24 22 24 22s24-12 24-22c0-12-15-19-24-10z'/>"
+        + "<path d='M246 230l8-8 8 8-8 8z'/><path d='M238 250h32'/>"
+        + "</g></svg>";
+      return "url(\"data:image/svg+xml," + encodeURIComponent(svg) + "\")";
+    })();
+
+    function bgOverlay(el, image, size, opacity) {
+      const ov = document.createElement('div'); ov.className = 'bgov';
+      ov.style.backgroundImage = image; ov.style.backgroundSize = size; ov.style.opacity = opacity;
+      el.appendChild(ov);
+    }
+
+    function bgCard(w, h, apply, file, safe) {
       const el = document.createElement('div'); el.className = 'bgbox';
       const pw = Math.round(w / 6), ph = Math.round(h / 6);
-      el.style.width = w + 'px'; el.style.height = h + 'px'; el.style.background = GRAD;
-      el.style.setProperty('--doodle', DOODLE); el.style.setProperty('--doodleop', pat ? '0.05' : '0');
+      el.style.width = w + 'px'; el.style.height = h + 'px';
+      apply(el);
       const wrap = document.createElement('div');
       wrap.style.width = pw + 'px'; wrap.style.height = ph + 'px'; wrap.style.overflow = 'hidden'; wrap.style.borderRadius = '6px';
       el.style.transformOrigin = 'top left'; el.style.transform = `scale(${pw / w})`;
       wrap.appendChild(el);
-      const file = `bg-${pat ? 'patterned' : 'plain'}-${w}x${h}.png`;
       const c = card(wrap, file, { solid: true, scale: 1 });
       c.querySelector('.btn').onclick = () => {
         const prev = el.style.transform; el.style.transform = 'none';
-        dl(el, file, 1, false).then(() => { el.style.transform = prev; });
+        dl(el, file, 1, false).then(() => { el.style.transform = prev; })
+          .catch(e => { el.style.transform = prev; if (safe) alert("No se pudo exportar el fondo de WhatsApp.\nLa imagen local bloquea la exportacion en file://.\nSolucion: pulsa 'Load whatsapp background.png' y elige el archivo (siempre exporta), o abre la pagina con  python -m http.server"); else throw e; });
       };
-      row.appendChild(c);
+      return c;
+    }
+
+    function renderBackgrounds() {
+      const row = document.getElementById('bgRow'); row.innerHTML = '';
+      const [w, h] = document.getElementById('bgSize').value.split('x').map(Number);
+      const pat = document.getElementById('bgPat').value === 'on';
+      // 1) brand gradient (with / without doodle)
+      row.appendChild(bgCard(w, h, el => {
+        el.style.background = GRAD;
+        el.style.setProperty('--doodle', DOODLE);
+        el.style.setProperty('--doodleop', pat ? '0.05' : '0');
+      }, `bg-${pat ? 'patterned' : 'plain'}-${w}x${h}.png`));
+      // 2) WhatsApp wallpaper — pick the file, it downloads in one click
+      const waCard = bgCard(w, h, el => {
+        el.style.background = GRAD; el.style.setProperty('--doodleop', '0');
+        bgOverlay(el, `url("${waBgData}")`, '300px', 0.10);
+      }, `bg-whatsapp-${w}x${h}.png`);
+      waCard.querySelector('.btn').onclick = () => {
+        const el = document.createElement('div');
+        el.style.cssText = 'position:fixed;left:-99999px;top:0;overflow:hidden;width:' + w + 'px;height:' + h + 'px;background:' + GRAD;
+        bgOverlay(el, `url("${waBgData}")`, '300px', 0.10);
+        document.body.appendChild(el);
+        dl(el, `bg-whatsapp-${w}x${h}.png`, 1, false).then(() => el.remove());
+      };
+      row.appendChild(waCard);
+      // 3) WhatsBizPro doodles — custom pattern, even fainter, always exports clean
+      row.appendChild(bgCard(w, h, el => {
+        el.style.background = GRAD; el.style.setProperty('--doodleop', '0');
+        bgOverlay(el, WABIZ_DOODLE, '300px', 0.07);
+      }, `bg-whatsbizpro-doodles-${w}x${h}.png`));
     }
 
     /* ---------- logo & elements ---------- */
